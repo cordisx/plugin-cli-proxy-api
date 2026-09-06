@@ -1,0 +1,7 @@
+{
+  "extends": "https://raw.githubusercontent.com/cordisx/cordisxmono/c63c2e8c2ba7e11502934a52ad2ce3734e804cdc/tooling/quality/dprint/code.json",
+  "includes": ["**/*.{js,mjs,cjs,jsx,ts,mts,cts,tsx,json,jsonc,md,css}"],
+  "excludes": ["**/node_modules/**", "**/dist/**", "package-lock.json"],
+  "malva": {},
+  "plugins": ["npm:dprint-plugin-malva@0.16.0"]
+}

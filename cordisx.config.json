@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "plugins": [
+    {
+      "id": "cli-proxy-api",
+      "entry": "./src/index.ts",
+      "enabled": true,
+      "config": {}
+    }
+  ]
+}
