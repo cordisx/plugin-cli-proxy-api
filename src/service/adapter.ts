@@ -1,11 +1,11 @@
 import type {
   PlatformProviderAdapterV1,
-  PlatformProviderFactoryConfigurationV1,
+  PlatformProviderFactoryConfigurationV2,
   PlatformProviderModelRefV1,
   PlatformProviderResultV1,
   PlatformProviderSessionRefV1,
   PlatformProviderSessionV1,
-} from '@cordisx/protocol/platform-provider/v1'
+} from '@cordisx/protocol/platform-provider/v2'
 import { BrokerClient } from './broker-client.js'
 import { LifecycleProjection } from './lifecycle.js'
 import { model, object, session, sessionDetail, text } from './values.js'
@@ -30,7 +30,7 @@ export class CliProxyPlatformProviderAdapter implements PlatformProviderAdapterV
   constructor(
     readonly providerId: string,
     readonly providerGeneration: string,
-    readonly configuration: PlatformProviderFactoryConfigurationV1,
+    readonly configuration: PlatformProviderFactoryConfigurationV2,
     broker: ConstructorParameters<typeof BrokerClient>[0],
     private readonly signal: AbortSignal,
   ) {

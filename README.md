@@ -18,10 +18,9 @@ filesystem path, raw transport, or Fleet handle.
 
 The candidate pins Protocol `f9b57a6dc665ff471c9bda06d4923be6e2e03b6a`.
 It remains private and unmerged until the matching Host service loader and
-broker authority are formally merged. One contract gap is still open: the v1
-factory projection omits the safe per-provider model mapping stored in the
-CLIProxy runtime configuration. The migration must resolve that public
-projection before claiming feature parity or deleting the Host-built consumer.
+broker authority are formally merged. The branch consumes the formal Protocol v2 safe factory projection so each
+Host-validated provider model mapping reaches the plugin without exposing raw
+service configuration. Protocol v2 is pinned at `cbfd15ef4d2f51bcffa659f393cd65730bbe5f0d`; the matching Host v2 implementation must still be formalized before this plugin can merge.
 
 ## Development
 

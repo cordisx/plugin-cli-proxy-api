@@ -14,8 +14,7 @@ Host 继续负责 endpoint 与凭据解析、进程启动、不透明 workspace 
 
 候选精确固定 Protocol `f9b57a6dc665ff471c9bda06d4923be6e2e03b6a`。
 在匹配的 Host 服务装载器和 broker authority 正式合入前，包保持 private 且 PR 不合入。
-目前还存在一个公开合同缺口：v1 factory projection 没有携带 CLIProxy runtime 配置中的安全模型映射。
-在宣称功能等价或删除 Host 内置消费者前，必须先解决这个投影缺口。
+当前分支消费正式的 Protocol v2 安全 factory projection，让 Host 校验后的模型映射进入插件，同时不暴露原始服务配置。Protocol v2 已精确固定为 `cbfd15ef4d2f51bcffa659f393cd65730bbe5f0d`；匹配的 Host v2 实现正式合入后，本插件才可合入。
 
 ## 开发
 

@@ -33,11 +33,12 @@
     "lint": "eslint .",
     "stylelint": "stylelint \"src/**/*.css\" --allow-empty-input",
     "test": "node --test test/*.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@cordisx/eslint-config": "github:cordisx/cordisxmono#c63c2e8c2ba7e11502934a52ad2ce3734e804cdc",
-    "@cordisx/protocol": "github:cordisx/cordisx-protocol#f9b57a6dc665ff471c9bda06d4923be6e2e03b6a",
+    "@cordisx/protocol": "github:cordisx/cordisx-protocol#cbfd15ef4d2f51bcffa659f393cd65730bbe5f0d",
     "@deepseek-ai/cordis": "4.0.1",
     "@deepseek-ai/schemastery": "3.18.1",
     "@projectwallace/stylelint-plugin": "0.7.0",

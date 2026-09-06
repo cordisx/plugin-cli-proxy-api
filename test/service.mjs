@@ -20,6 +20,7 @@ const configuration = {
   displayName: 'Gateway A',
   enabled: true,
   requestTimeoutMs: 30000,
+  mapping: { models: [{ sourceModelId: 'source-gpt', modelId: 'gpt-test', enabled: true, isDefault: true }] },
 }
 
 function broker() {
@@ -101,6 +102,7 @@ test('registers every enabled provider through the public Host-owned service con
   })
   assert.equal(definition.descriptor.providerId, 'gateway-a')
   assert.equal(definition.brokerRequest.bindings.length, 22)
+  assert.deepEqual(definition.mapping, configuration.mapping)
   assert.deepEqual(definition.descriptor.operations, [
     'models.list',
     'sessions.list',

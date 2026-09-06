@@ -1,7 +1,7 @@
 import type {
-  PlatformProviderDefinitionV1,
-  PlatformProviderServiceApplyV1,
-} from '@cordisx/protocol/platform-provider/v1'
+  PlatformProviderDefinitionV2,
+  PlatformProviderServiceApplyV2,
+} from '@cordisx/protocol/platform-provider/v2'
 import { CliProxyPlatformProviderAdapter } from './adapter.js'
 import { BROKER_BINDINGS } from './bindings.js'
 
@@ -17,10 +17,10 @@ const OPERATIONS = [
   'approvals.decide',
 ] as const
 
-export const apply: PlatformProviderServiceApplyV1 = async (ctx, input) => {
+export const apply: PlatformProviderServiceApplyV2 = async (ctx, input) => {
   for (const configuration of input.configurations) {
     if (!configuration.enabled) continue
-    const definition: PlatformProviderDefinitionV1 = {
+    const definition: PlatformProviderDefinitionV2 = {
       descriptor: {
         $schema:
           'https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/platform-provider-descriptor.v1.schema.json',
@@ -31,9 +31,9 @@ export const apply: PlatformProviderServiceApplyV1 = async (ctx, input) => {
         implementationStatus: 'experimental',
         operations: OPERATIONS,
       },
-      mapping: { models: [] },
+      mapping: configuration.mapping,
       brokerRequest: {
-        bindings: BROKER_BINDINGS as PlatformProviderDefinitionV1['brokerRequest']['bindings'],
+        bindings: BROKER_BINDINGS as PlatformProviderDefinitionV2['brokerRequest']['bindings'],
       },
       createAdapter: async factory => {
         if (factory.owner.ownerHandle !== input.owner.ownerHandle) {
