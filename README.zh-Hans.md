@@ -4,17 +4,18 @@
 
 ## 迁移状态
 
-此功能分支已经抽出 Provider 会话 renderer。它只使用 `cordisx/contracts`、
-`cordisx/react`、`cordisx/ui` 和经过权限 broker 的公开 `ctx.platform` 服务。
-package 继续保持 private；backend 迁移完成前，此分支不得合并。
+当前分支已经包含拆出的 renderer，以及可执行的 package-v9
+`platform-provider` 服务候选。Renderer 只使用公开的 Host React、UI 和
+`ctx.platform` 合同；Node 服务只使用公开 Protocol broker 与
+`ctx.platformProviders.register`。CLIProxy 的方法声明、响应投影、生命周期和审批适配均由本仓库维护。
 
-Provider 配置还需要新的 versioned Protocol service declaration
-以及对应的 Host-owned Provider Fleet adapter。在二者正式合并前，本仓不会复制
-Host launcher 配置、凭据、持久化、app-server transport 或 private service API。
+Host 继续负责 endpoint 与凭据解析、进程启动、不透明 workspace handle、方法/Schema
+策略、配置持久化和唯一的 Provider Fleet。插件不会获得 endpoint、凭据、进程、文件系统路径、原始 transport 或 Fleet handle。
 
-renderer 保留 `(providerId, modelId)` 和 `(providerId, remoteSessionId)`
-复合身份。它不会创建第二个 Provider Fleet、替换 Codex Desktop 原生连接，或在
-失败时回退到原生连接。
+候选精确固定 Protocol `f9b57a6dc665ff471c9bda06d4923be6e2e03b6a`。
+在匹配的 Host 服务装载器和 broker authority 正式合入前，包保持 private 且 PR 不合入。
+目前还存在一个公开合同缺口：v1 factory projection 没有携带 CLIProxy runtime 配置中的安全模型映射。
+在宣称功能等价或删除 Host 内置消费者前，必须先解决这个投影缺口。
 
 ## 开发
 

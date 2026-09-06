@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-package.v9.schema.json",
+  "schemaVersion": 9,
+  "id": "cli-proxy-api",
+  "version": "0.1.0",
+  "entry": "./dist/runtime/module.js",
+  "readme": "./README.md",
+  "canonicalSource": "https://github.com/cordisx/plugin-cli-proxy-api",
+  "distribution": {
+    "mode": "explicit-local-v1",
+    "signature": "unsupported"
+  },
+  "compatibility": {
+    "runtimeAbi": 1,
+    "protocolSchemas": [
+      "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v9.schema.json"
+    ]
+  },
+  "dependencies": [],
+  "runtimeManifest": {
+    "path": "./runtime-manifest.json",
+    "schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v9.schema.json",
+    "digest": "sha256:206164ae3566fe02a47f9aad6efac038d7531196860f03c6c156cacfd203bf0f"
+  }
+}

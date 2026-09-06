@@ -1,24 +1,27 @@
 # CLIProxy Providers
 
-This public repository is the future standalone owner of the CordisX
-CLIProxyAPI provider sessions plugin.
+This public repository is the standalone owner of the CordisX CLIProxyAPI
+provider sessions plugin.
 
 ## Migration status
 
-This feature branch contains the extracted Provider sessions renderer. It uses
-only `cordisx/contracts`, `cordisx/react`, `cordisx/ui`, and the public
-permission-brokered `ctx.platform` service. The package remains private and the
-branch must not merge until the backend migration is complete.
+This branch contains the extracted renderer and an executable package-v9
+`platform-provider` service candidate. The renderer uses only public Host React,
+UI, and `ctx.platform` contracts. The Node service uses only the public Protocol
+broker and `ctx.platformProviders.register`; CLIProxy method declarations,
+response projection, lifecycle, and approval adaptation live here.
 
-Provider configuration requires a new versioned Protocol service declaration
-and a matching Host-owned Provider Fleet adapter. Until both are formally
-merged, this repository will not copy
-Host launcher configuration, credentials, persistence, app-server transport,
-or private service APIs.
+The Host still owns endpoint and credential resolution, process startup, opaque
+workspace handles, method/schema policy, configuration persistence, and the
+single Provider Fleet. The plugin receives no endpoint, credential, process,
+filesystem path, raw transport, or Fleet handle.
 
-The renderer preserves `(providerId, modelId)` and
-`(providerId, remoteSessionId)` identity. It does not create a second Provider
-Fleet, replace the native Codex Desktop connection, or fall back to it.
+The candidate pins Protocol `f9b57a6dc665ff471c9bda06d4923be6e2e03b6a`.
+It remains private and unmerged until the matching Host service loader and
+broker authority are formally merged. One contract gap is still open: the v1
+factory projection omits the safe per-provider model mapping stored in the
+CLIProxy runtime configuration. The migration must resolve that public
+projection before claiming feature parity or deleting the Host-built consumer.
 
 ## Development
 

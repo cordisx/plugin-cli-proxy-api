@@ -1,0 +1,53 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v9.schema.json",
+  "schemaVersion": 9,
+  "id": "cli-proxy-api",
+  "name": "CLIProxy Providers",
+  "capabilities": [
+    {
+      "name": "models.read",
+      "required": false,
+      "scope": {}
+    },
+    {
+      "name": "tasks.catalog.read",
+      "required": false,
+      "scope": {}
+    },
+    {
+      "name": "tasks.content.read",
+      "required": false,
+      "scope": {}
+    },
+    {
+      "name": "tasks.create",
+      "required": false,
+      "scope": {}
+    },
+    {
+      "name": "tasks.control",
+      "required": false,
+      "scope": {}
+    },
+    {
+      "name": "turns.submit",
+      "required": false,
+      "scope": {}
+    },
+    {
+      "name": "turns.control",
+      "required": false,
+      "scope": {}
+    }
+  ],
+  "services": [
+    {
+      "id": "providers-runtime",
+      "kind": "platform-provider",
+      "owner": "host",
+      "schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/cli-proxy-provider-runtime-config.v1.schema.json",
+      "applicationMode": "service-restart",
+      "entry": "./dist/service.mjs"
+    }
+  ]
+}
