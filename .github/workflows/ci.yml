@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install --global npm@12.0.2 --registry=https://registry.npmjs.org
-      - run: test "$(npm --version)" = "12.0.2"
-      - run: npm ci --allow-git=root
+      # The formal Host Git package still pins Protocol as a nested Git dependency.
+      # Use the Node 22 bundled npm until Host publishes a dependency-closed package.
+      - run: npm ci
       - run: npm run check
