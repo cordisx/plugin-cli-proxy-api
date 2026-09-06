@@ -37,6 +37,7 @@
     "@cordisx/eslint-config": "github:cordisx/cordisxmono#c63c2e8c2ba7e11502934a52ad2ce3734e804cdc",
     "@cordisx/protocol": "github:cordisx/cordisx-protocol#703a3d03f1b533c4d54bf51e5c8818b53bdda4f5",
     "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/schemastery": "3.18.1",
     "@projectwallace/stylelint-plugin": "0.7.0",
     "@typescript-eslint/parser": "8.69.0",
     "@vitejs/plugin-react": "6.1.0",

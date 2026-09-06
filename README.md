@@ -5,19 +5,19 @@ CLIProxyAPI provider sessions plugin.
 
 ## Migration status
 
-The repository currently contains an inert, private-package scaffold. It does
-not yet provide the Provider sessions UI or provider configuration. The active
-implementation remains in `cordisx/cordisx` until the migration is complete.
+This feature branch contains the extracted Provider sessions renderer. It uses
+only `cordisx/contracts`, `cordisx/react`, `cordisx/ui`, and the public
+permission-brokered `ctx.platform` service. The package remains private and the
+branch must not merge until the backend migration is complete.
 
-The renderer can move to the existing public `cordisx/contracts`,
-`cordisx/react`, and `cordisx/ui` entries. Provider configuration requires a
-new versioned Protocol service declaration and a matching Host-owned Provider
-Fleet adapter. Until both are formally merged, this repository will not copy
+Provider configuration requires a new versioned Protocol service declaration
+and a matching Host-owned Provider Fleet adapter. Until both are formally
+merged, this repository will not copy
 Host launcher configuration, credentials, persistence, app-server transport,
 or private service APIs.
 
-The planned plugin will preserve composite provider identity and use only the
-permission-brokered `ctx.platform` service. It will not create a second Provider
+The renderer preserves `(providerId, modelId)` and
+`(providerId, remoteSessionId)` identity. It does not create a second Provider
 Fleet, replace the native Codex Desktop connection, or fall back to it.
 
 ## Development

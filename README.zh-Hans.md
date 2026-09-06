@@ -4,17 +4,17 @@
 
 ## 迁移状态
 
-仓库目前只有惰性的私有 package scaffold，尚未提供 Provider 会话界面或
-Provider 配置。迁移完成前，正在生效的实现仍位于 `cordisx/cordisx`。
+此功能分支已经抽出 Provider 会话 renderer。它只使用 `cordisx/contracts`、
+`cordisx/react`、`cordisx/ui` 和经过权限 broker 的公开 `ctx.platform` 服务。
+package 继续保持 private；backend 迁移完成前，此分支不得合并。
 
-renderer 可迁移到现有公开入口 `cordisx/contracts`、`cordisx/react` 和
-`cordisx/ui`。Provider 配置还需要新的 versioned Protocol service declaration
+Provider 配置还需要新的 versioned Protocol service declaration
 以及对应的 Host-owned Provider Fleet adapter。在二者正式合并前，本仓不会复制
 Host launcher 配置、凭据、持久化、app-server transport 或 private service API。
 
-计划中的插件会保留复合 Provider 身份，并且只使用经过权限 broker 的
-`ctx.platform` 服务。它不会创建第二个 Provider Fleet、替换 Codex Desktop
-原生连接，或在失败时回退到原生连接。
+renderer 保留 `(providerId, modelId)` 和 `(providerId, remoteSessionId)`
+复合身份。它不会创建第二个 Provider Fleet、替换 Codex Desktop 原生连接，或在
+失败时回退到原生连接。
 
 ## 开发
 
