@@ -4,17 +4,17 @@
 
 ## 迁移状态
 
-仓库目前只有惰性的私有 package scaffold，尚未提供 Provider 会话界面或
-Provider 配置。迁移完成前，正在生效的实现仍位于 `cordisx/cordisx`。
+当前分支已经包含拆出的 renderer，以及可执行的 package-v9
+`platform-provider` 服务候选。Renderer 只使用公开的 Host React、UI 和
+`ctx.platform` 合同；Node 服务只使用公开 Protocol broker 与
+`ctx.platformProviders.register`。CLIProxy 的方法声明、响应投影、生命周期和审批适配均由本仓库维护。
 
-renderer 可迁移到现有公开入口 `cordisx/contracts`、`cordisx/react` 和
-`cordisx/ui`。Provider 配置还需要新的 versioned Protocol service declaration
-以及对应的 Host-owned Provider Fleet adapter。在二者正式合并前，本仓不会复制
-Host launcher 配置、凭据、持久化、app-server transport 或 private service API。
+Host 继续负责 endpoint 与凭据解析、进程启动、不透明 workspace handle、方法/Schema
+策略、配置持久化和唯一的 Provider Fleet。插件不会获得 endpoint、凭据、进程、文件系统路径、原始 transport 或 Fleet handle。
 
-计划中的插件会保留复合 Provider 身份，并且只使用经过权限 broker 的
-`ctx.platform` 服务。它不会创建第二个 Provider Fleet、替换 Codex Desktop
-原生连接，或在失败时回退到原生连接。
+候选精确固定 Protocol `f9b57a6dc665ff471c9bda06d4923be6e2e03b6a`。
+在匹配的 Host 服务装载器和 broker authority 正式合入前，包保持 private 且 PR 不合入。
+当前分支消费正式的 Protocol v2 安全 factory projection，让 Host 校验后的模型映射进入插件，同时不暴露原始服务配置。Protocol v2 已精确固定为 `cbfd15ef4d2f51bcffa659f393cd65730bbe5f0d`；匹配的 Host v2 实现正式合入后，本插件才可合入。
 
 ## 开发
 
