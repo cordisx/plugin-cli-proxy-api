@@ -3,24 +3,24 @@
 This public repository is the standalone owner of the CordisX CLIProxyAPI
 provider sessions plugin.
 
-## Migration status
+## Delivery status
 
-This branch contains the extracted renderer and an executable package-v9
-`platform-provider` service candidate. The renderer uses only public Host React,
-UI, and `ctx.platform` contracts. The Node service uses only the public Protocol
-broker and `ctx.platformProviders.register`; CLIProxy method declarations,
-response projection, lifecycle, and approval adaptation live here.
+The standalone renderer and executable package-v9 `platform-provider` service
+are merged on `main`. The renderer uses only public Host React, UI, and
+`ctx.platform` contracts. The Node service uses only the public Protocol broker
+and `ctx.platformProviders.register`; CLIProxy method declarations, response
+projection, lifecycle, and approval adaptation live here.
 
-The Host still owns endpoint and credential resolution, process startup, opaque
+The Host owns endpoint and credential resolution, process startup, opaque
 workspace handles, method/schema policy, configuration persistence, and the
 single Provider Fleet. The plugin receives no endpoint, credential, process,
 filesystem path, raw transport, or Fleet handle.
 
-The candidate pins Protocol `f9b57a6dc665ff471c9bda06d4923be6e2e03b6a`.
-It remains private and unmerged until the matching Host service loader and
-broker authority are formally merged. The branch consumes the formal Protocol v2 safe factory projection so each
-Host-validated provider model mapping reaches the plugin without exposing raw
-service configuration. Protocol v2 is pinned at `cbfd15ef4d2f51bcffa659f393cd65730bbe5f0d`; the matching Host v2 implementation must still be formalized before this plugin can merge.
+The plugin pins Protocol `06277f9d117893a9215c991db8c0881df0f0b0f3` and
+the formal Host v2 and Codex app-server broker implementation
+`cb4d35d8e5a3632c18358ab9d9d04c4dec63e090`. The package remains `private`
+to prevent npm publication; its manifest declares explicit local source
+distribution, and no packaged installer is available yet.
 
 ## Development
 
@@ -33,7 +33,7 @@ npm run dev:dry-run
 ```
 
 `npm run dev:dry-run` validates the local source graph without launching Codex
-Desktop. The package remains `private` while the migration is incomplete.
+Desktop. The package remains `private`; use the explicit local source distribution described by the package manifest.
 
 ## Provenance and license
 
