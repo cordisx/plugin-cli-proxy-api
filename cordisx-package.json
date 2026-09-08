@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-package.v9.schema.json",
-  "schemaVersion": 9,
+  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-package.v13.schema.json",
+  "schemaVersion": 13,
   "id": "cli-proxy-api",
   "version": "0.1.0",
   "entry": "./dist/runtime/module.js",
@@ -13,13 +13,13 @@
   "compatibility": {
     "runtimeAbi": 1,
     "protocolSchemas": [
-      "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v9.schema.json"
+      "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v13.schema.json"
     ]
   },
   "dependencies": [],
   "runtimeManifest": {
     "path": "./runtime-manifest.json",
-    "schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v9.schema.json",
-    "digest": "sha256:206164ae3566fe02a47f9aad6efac038d7531196860f03c6c156cacfd203bf0f"
+    "schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v13.schema.json",
+    "digest": "sha256:42c9c6dbcb5435b8f121d83aaf5f81252c0004587837b8d1d2bcceebdd8a69b0"
   }
 }

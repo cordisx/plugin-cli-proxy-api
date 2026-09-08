@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v9.schema.json",
-  "schemaVersion": 9,
+  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v13.schema.json",
+  "schemaVersion": 13,
   "id": "cli-proxy-api",
   "name": "CLIProxy Providers",
   "capabilities": [
@@ -17,27 +17,37 @@
     {
       "name": "tasks.content.read",
       "required": false,
-      "scope": {}
+      "scope": {
+        "runtime": "exact-request"
+      }
     },
     {
       "name": "tasks.create",
       "required": false,
-      "scope": {}
+      "scope": {
+        "runtime": "exact-request"
+      }
     },
     {
       "name": "tasks.control",
       "required": false,
-      "scope": {}
+      "scope": {
+        "runtime": "exact-request"
+      }
     },
     {
       "name": "turns.submit",
       "required": false,
-      "scope": {}
+      "scope": {
+        "runtime": "exact-request"
+      }
     },
     {
       "name": "turns.control",
       "required": false,
-      "scope": {}
+      "scope": {
+        "runtime": "exact-request"
+      }
     }
   ],
   "services": [
