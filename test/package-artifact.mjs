@@ -16,7 +16,7 @@ async function validator(name) {
   return ajv.getSchema(schema.$id)
 }
 
-test('publishes schema-valid v9 package and runtime manifests with an exact digest', async () => {
+test('publishes schema-valid v13 package and runtime manifests with exact request scopes', async () => {
   const [packageText, runtimeText] = await Promise.all([
     readFile(new URL('../cordisx-package.json', import.meta.url), 'utf8'),
     readFile(new URL('../runtime-manifest.json', import.meta.url), 'utf8'),
@@ -24,11 +24,21 @@ test('publishes schema-valid v9 package and runtime manifests with an exact dige
   const packageManifest = JSON.parse(packageText)
   const runtimeManifest = JSON.parse(runtimeText)
   const [validatePackage, validateRuntime] = await Promise.all([
-    validator('plugin-package.v9.schema.json'),
-    validator('plugin-manifest.v9.schema.json'),
+    validator('plugin-package.v13.schema.json'),
+    validator('plugin-manifest.v13.schema.json'),
   ])
   assert.equal(validatePackage(packageManifest), true, JSON.stringify(validatePackage.errors))
   assert.equal(validateRuntime(runtimeManifest), true, JSON.stringify(validateRuntime.errors))
+  const runtimeExact = new Set([
+    'tasks.content.read',
+    'tasks.create',
+    'tasks.control',
+    'turns.submit',
+    'turns.control',
+  ])
+  for (const capability of runtimeManifest.capabilities) {
+    assert.deepEqual(capability.scope, runtimeExact.has(capability.name) ? { runtime: 'exact-request' } : {})
+  }
   assert.equal(
     packageManifest.runtimeManifest.digest,
     `sha256:${createHash('sha256').update(runtimeText).digest('hex')}`,
