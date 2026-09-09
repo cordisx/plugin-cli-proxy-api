@@ -38,13 +38,13 @@
   },
   "devDependencies": {
     "@cordisx/eslint-config": "github:cordisx/cordisxmono#c63c2e8c2ba7e11502934a52ad2ce3734e804cdc",
-    "@cordisx/protocol": "github:cordisx/cordisx-protocol#c2f6f8e4bf4a638bf4627c9c567792f2fedbcfd6",
+    "@cordisx/protocol": "github:cordisx/cordisx-protocol#f3e18c925c34d90fdf203c158811cef10f7ebf57",
     "@deepseek-ai/cordis": "4.0.1",
     "@deepseek-ai/schemastery": "3.18.1",
     "@projectwallace/stylelint-plugin": "0.7.0",
     "@typescript-eslint/parser": "8.69.0",
     "@vitejs/plugin-react": "6.1.0",
-    "cordisx": "github:cordisx/cordisx#152d55aa26527b23c5e70a752fb3f6562e944afc",
+    "cordisx": "file:.cache/sdk/cordisx-efbff656d84b.tgz",
     "dprint": "0.57.1",
     "eslint": "9.39.4",
     "stylelint": "17.15.0",
@@ -64,5 +64,8 @@
   "bugs": {
     "url": "https://github.com/cordisx/plugin-cli-proxy-api/issues"
   },
-  "homepage": "https://github.com/cordisx/plugin-cli-proxy-api#readme"
+  "homepage": "https://github.com/cordisx/plugin-cli-proxy-api#readme",
+  "overrides": {
+    "@cordisx/protocol": "$@cordisx/protocol"
+  }
 }
