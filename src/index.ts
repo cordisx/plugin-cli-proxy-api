@@ -16,7 +16,7 @@ import { createProviderFleetPage } from './provider-fleet-page.js'
 import { CLI_PROXY_ICON } from './icon.js'
 
 export const name = 'cli-proxy-api'
-export const inject = ['i18n', 'slots', 'pages', 'routes', 'platform']
+export const inject = ['i18n', 'slots', 'pages', 'routes', 'platform', 'notifications']
 export const icon = CLI_PROXY_ICON
 
 const capabilities = [
@@ -76,7 +76,7 @@ interface Messages {
   'state.empty': undefined
   'state.no-models': undefined
   'state.select-session': undefined
-  'state.error': { readonly message: string }
+  'state.error': undefined
   'session.provider': { readonly provider: string }
   'session.model': { readonly model: string }
   'permission.models.read': undefined
@@ -185,7 +185,7 @@ export function apply(ctx: Context, config: Config = Config({})): void {
       'state.empty': 'No matching sessions.',
       'state.no-models': 'No provider models are available.',
       'state.select-session': 'Select a provider session to inspect its content.',
-      'state.error': 'Provider request failed: {message}',
+      'state.error': 'Provider request failed. Check the connection and try again.',
       'session.provider': 'Provider {provider}',
       'session.model': 'Model {model}',
       'permission.models.read': 'List models from configured external providers',
@@ -230,7 +230,7 @@ export function apply(ctx: Context, config: Config = Config({})): void {
       'state.empty': '没有匹配的会话。',
       'state.no-models': '没有可用的 Provider 模型。',
       'state.select-session': '选择一个 Provider 会话以查看内容。',
-      'state.error': 'Provider 请求失败：{message}',
+      'state.error': 'Provider 请求失败，请检查连接后重试',
       'session.provider': 'Provider {provider}',
       'session.model': '模型 {model}',
       'permission.models.read': '读取已配置外部 Provider 的模型',

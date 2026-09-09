@@ -42,7 +42,7 @@ test('exports the CLIProxy renderer manifest through public Host contracts', () 
       'turns.control',
     ],
   )
-  assert.deepEqual(plugin.inject, ['i18n', 'slots', 'pages', 'routes', 'platform'])
+  assert.deepEqual(plugin.inject, ['i18n', 'slots', 'pages', 'routes', 'platform', 'notifications'])
 })
 
 test('registers one public page, route, and navigation contribution', () => {

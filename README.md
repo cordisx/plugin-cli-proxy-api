@@ -39,3 +39,7 @@ Desktop. The package remains `private`; use the explicit local source distributi
 [HISTORY.md](HISTORY.md) records the filtered owner history from the original
 Host-owned implementation. This repository is licensed under
 [AGPL-3.0-or-later](LICENSE).
+
+## Notification feedback
+
+See [operation notifications and development dependencies](./.agents/docs/notifications.md).
