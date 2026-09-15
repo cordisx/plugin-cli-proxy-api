@@ -15,7 +15,7 @@ Host 负责 endpoint 与凭据解析、进程启动、不透明 workspace handle
 
 插件当前固定实验性 Protocol review head
 `a1127780513b76f0c3b1acee70cd638b5348c6a5` 和 Host review head
-`41d62722bc84a5cbe9320ed116faf1a80b428e57`。这些公开依赖尚未合并或发布。包继续保持
+`204d7a59e800c27258fb41435390a72cee1c5e9e`。这些公开依赖尚未合并或发布。包继续保持
 `private` 以阻止 npm 发布；manifest 声明显式本地源码分发，目前仍未提供安装包。
 
 ## 开发

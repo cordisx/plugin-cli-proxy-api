@@ -18,7 +18,7 @@ filesystem path, raw transport, or Fleet handle.
 
 The plugin currently pins the experimental Protocol review head
 `a1127780513b76f0c3b1acee70cd638b5348c6a5` and Host review head
-`41d62722bc84a5cbe9320ed116faf1a80b428e57`. These dependencies are public but
+`204d7a59e800c27258fb41435390a72cee1c5e9e`. These dependencies are public but
 unmerged and unpublished. The package remains `private` to prevent npm
 publication; its manifest declares explicit local source distribution, and no
 packaged installer is available yet.
