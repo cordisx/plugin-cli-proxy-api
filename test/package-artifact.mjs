@@ -11,7 +11,7 @@ import addFormats from 'ajv-formats'
 
 const execFileAsync = promisify(execFile)
 const schemas = process.env.CORDISX_PROTOCOL_ROOT === undefined
-  ? new URL('../../cordisx-protocol/schemas/', import.meta.url)
+  ? new URL('../node_modules/@cordisx/protocol/schemas/', import.meta.url)
   : new URL('schemas/', pathToFileURL(`${resolve(process.env.CORDISX_PROTOCOL_ROOT)}/`))
 const gatewayRuntimeResources = [
   {

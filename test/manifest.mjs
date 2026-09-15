@@ -8,7 +8,7 @@ import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 
 const protocolSchemas = process.env.CORDISX_PROTOCOL_ROOT === undefined
-  ? new URL('../../cordisx-protocol/schemas/', import.meta.url)
+  ? new URL('../node_modules/@cordisx/protocol/schemas/', import.meta.url)
   : new URL('schemas/', pathToFileURL(`${resolve(process.env.CORDISX_PROTOCOL_ROOT)}/`))
 
 async function protocolValidator(schemaFile) {
