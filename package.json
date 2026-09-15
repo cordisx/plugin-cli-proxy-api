@@ -57,7 +57,7 @@
     "@projectwallace/stylelint-plugin": "0.7.0",
     "@typescript-eslint/parser": "8.69.0",
     "@vitejs/plugin-react": "6.1.0",
-    "cordisx": "github:cordisx/cordisx#6afdc0353a23f7e88d7e67fff23590552457078a",
+    "cordisx": "github:cordisx/cordisx#41d62722bc84a5cbe9320ed116faf1a80b428e57",
     "dprint": "0.57.1",
     "eslint": "9.39.4",
     "stylelint": "17.15.0",
