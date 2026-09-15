@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-gateway-openai-upstream.v1.schema.json",
+  "title": "CLIProxyAPI Chat Completions upstream collection v1",
+  "type": "array",
+  "maxItems": 64,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["name", "disabled", "prefix", "base-url", "api-key-entries", "request-retry", "models"],
+    "properties": {
+      "name": { "type": "string", "minLength": 1, "maxLength": 96 },
+      "disabled": { "const": false },
+      "prefix": { "type": "string", "minLength": 1, "maxLength": 96 },
+      "base-url": { "type": "null" },
+      "api-key-entries": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["api-key"],
+            "properties": { "api-key": { "type": "null" } }
+          }
+        ],
+        "items": false,
+        "minItems": 1,
+        "maxItems": 1
+      },
+      "request-retry": { "const": 0 },
+      "models": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 256,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "alias", "display-name", "force-mapping"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1, "maxLength": 256 },
+            "alias": { "type": "string", "minLength": 1, "maxLength": 256 },
+            "display-name": { "type": "string", "minLength": 1, "maxLength": 200 },
+            "force-mapping": { "const": true },
+            "input-modalities": {
+              "type": "array",
+              "uniqueItems": true,
+              "maxItems": 3,
+              "items": { "enum": ["text", "image", "audio"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+host: 127.0.0.1
+port: 0
+api-keys:
+  - null
+commercial-mode: true
+debug: false
+logging-to-file: false
+remote-management:
+  allow-remote: false
+  secret-key: null
+  disable-control-panel: true
+  disable-auto-update-panel: true
+codex-api-key: []
+openai-compatibility: []

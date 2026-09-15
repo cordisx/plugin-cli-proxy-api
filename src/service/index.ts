@@ -5,6 +5,8 @@ import type {
 import { CliProxyPlatformProviderAdapter } from './adapter.js'
 import { BROKER_BINDINGS } from './bindings.js'
 
+export * from './upstream-registry.js'
+
 const OPERATIONS = [
   'models.list',
   'sessions.list',

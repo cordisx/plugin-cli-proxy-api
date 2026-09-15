@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-upstream-descriptor.v1.schema.json",
+  "title": "CordisX CLIProxy Upstream Descriptor v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "contract",
+    "schemaVersion",
+    "revision",
+    "upstreamId",
+    "displayName",
+    "enabled",
+    "wireApi",
+    "order",
+    "requestTimeoutMs",
+    "group",
+    "models"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-upstream-descriptor.v1.schema.json"
+    },
+    "contract": { "const": "cordisx.cli-proxy-upstream-descriptor/v1" },
+    "schemaVersion": { "const": 1 },
+    "revision": { "type": "integer", "minimum": 1 },
+    "upstreamId": { "$ref": "#/$defs/id" },
+    "displayName": { "$ref": "#/$defs/label" },
+    "enabled": { "type": "boolean" },
+    "wireApi": { "enum": ["responses", "chat-completions"] },
+    "prefix": { "$ref": "#/$defs/id" },
+    "order": { "type": "integer", "minimum": -1000, "maximum": 1000 },
+    "requestTimeoutMs": { "type": "integer", "minimum": 1000, "maximum": 120000 },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["groupId", "displayName", "order"],
+      "properties": {
+        "groupId": { "$ref": "#/$defs/id" },
+        "displayName": { "$ref": "#/$defs/label" },
+        "order": { "type": "integer", "minimum": -1000, "maximum": 1000 }
+      }
+    },
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sourceModelId", "modelId", "enabled", "isDefault"],
+        "properties": {
+          "sourceModelId": { "$ref": "#/$defs/modelId" },
+          "modelId": { "$ref": "#/$defs/modelId" },
+          "displayName": { "$ref": "#/$defs/label" },
+          "enabled": { "type": "boolean" },
+          "isDefault": { "type": "boolean" },
+          "inputModalities": {
+            "type": "array",
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": { "enum": ["text", "image", "audio"] }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$" },
+    "label": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "^\\S(?:.*\\S)?$" },
+    "modelId": { "type": "string", "minLength": 1, "maxLength": 256, "pattern": "^[^\\u0000-\\u001f\\u007f]+$" }
+  }
+}

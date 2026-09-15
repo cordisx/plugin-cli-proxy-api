@@ -1,6 +1,6 @@
 {
-  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v13.schema.json",
-  "schemaVersion": 13,
+  "$schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/plugin-manifest.v14.schema.json",
+  "schemaVersion": 14,
   "id": "cli-proxy-api",
   "name": "CLIProxy Providers",
   "capabilities": [
@@ -58,6 +58,68 @@
       "schema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/cli-proxy-provider-runtime-config.v1.schema.json",
       "applicationMode": "service-restart",
       "entry": "./dist/service.mjs"
+    },
+    {
+      "id": "gateway-runtime",
+      "kind": "managed-backend",
+      "owner": "host",
+      "entry": "./dist/gateway.mjs",
+      "definitionSchema": "https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/managed-service-definition.v1.schema.json",
+      "runtimeResources": [
+        {
+          "path": "./config/cli-proxy-api.yaml",
+          "mode": "data",
+          "digest": "sha256:4e2806a2c9a4a490f8685ffc96cf1dc40010248a8d25437b718249f3275b198e",
+          "byteLength": 268
+        },
+        {
+          "path": "./schemas/cli-proxy-gateway-model-catalog.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:b20bf7d388ae1417eaa1e86186eab241c754fc54af3c3b4d5439308202194b30",
+          "byteLength": 639
+        },
+        {
+          "path": "./schemas/cli-proxy-gateway-codex-upstream.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:a9908de439af944ac24744721c117fd0c0a18c18e61355d343f8ad57311fafba",
+          "byteLength": 1253
+        },
+        {
+          "path": "./schemas/cli-proxy-gateway-openai-upstream.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:8f226eeaf778394f452c0c224bd163c1c68806f56c63982d0394c03d6be4483b",
+          "byteLength": 1925
+        },
+        {
+          "path": "./schemas/cli-proxy-management-auth-files.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:9785b09906567848143054d522b141f5f06234f7b16a8dc2a02ef31e6d58e76c",
+          "byteLength": 370
+        },
+        {
+          "path": "./schemas/cli-proxy-management-operation.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:c1a9e12cf48ee53825948b053ea364ce70d09122321502560defebeb3d8d0c12",
+          "byteLength": 218
+        }
+      ],
+      "consumerGrants": [
+        {
+          "pluginId": "cli-proxy-api",
+          "operations": [
+            "gateway.models.list",
+            "gateway.management.accounts.list",
+            "gateway.management.accounts.toggle",
+            "gateway.management.oauth.anthropic.start",
+            "gateway.management.oauth.codex.start",
+            "gateway.management.oauth.antigravity.start",
+            "gateway.management.oauth.kimi.start",
+            "gateway.management.oauth.xai.start",
+            "gateway.management.oauth.poll",
+            "gateway.management.oauth.cancel"
+          ]
+        }
+      ]
     }
   ]
 }

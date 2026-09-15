@@ -5,21 +5,23 @@ provider sessions plugin.
 
 ## Delivery status
 
-This version contains the standalone renderer and executable package-v13
-`platform-provider` service. The renderer uses only public Host React, UI, and
-`ctx.platform` contracts. The Node service uses only the public Protocol broker
-and `ctx.platformProviders.register`; CLIProxy method declarations, response
-projection, lifecycle, and approval adaptation live here.
+This version contains the standalone renderer, executable `platform-provider`
+service, and package-v14 managed gateway runtime. The renderer uses only public
+Host React, UI, and service contracts. The Node services use only public
+Protocol and Host-managed service APIs; CLIProxy method declarations, response
+projection, lifecycle, upstream composition, and account controls live here.
 
 The Host owns endpoint and credential resolution, process startup, opaque
 workspace handles, method/schema policy, configuration persistence, and the
 single Provider Fleet. The plugin receives no endpoint, credential, process,
 filesystem path, raw transport, or Fleet handle.
 
-The plugin pins Protocol `c2f6f8e4bf4a638bf4627c9c567792f2fedbcfd6` and
-requires a Host with manifest/package v13 exact-request scope support. The package remains `private`
-to prevent npm publication; its manifest declares explicit local source
-distribution, and no packaged installer is available yet.
+The plugin currently pins the experimental Protocol review head
+`a1127780513b76f0c3b1acee70cd638b5348c6a5` and Host review head
+`6afdc0353a23f7e88d7e67fff23590552457078a`. These dependencies are public but
+unmerged and unpublished. The package remains `private` to prevent npm
+publication; its manifest declares explicit local source distribution, and no
+packaged installer is available yet.
 
 ## Development
 

@@ -3,8 +3,12 @@ import { build } from 'esbuild'
 
 await mkdir(new URL('../dist/', import.meta.url), { recursive: true })
 await build({
-  entryPoints: [new URL('../src/service/index.ts', import.meta.url).pathname],
-  outfile: new URL('../dist/service.mjs', import.meta.url).pathname,
+  entryPoints: {
+    service: new URL('../src/service/index.ts', import.meta.url).pathname,
+    gateway: new URL('../src/service/gateway.ts', import.meta.url).pathname,
+  },
+  outdir: new URL('../dist/', import.meta.url).pathname,
+  outExtension: { '.js': '.mjs' },
   bundle: true,
   format: 'esm',
   platform: 'node',

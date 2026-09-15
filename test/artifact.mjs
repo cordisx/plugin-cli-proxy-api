@@ -8,6 +8,7 @@ test('production graph retains the plugin-owned stylesheet', async () => {
   assert.equal(artifact.entry, './module.js')
   assert.equal(artifact.initialStyles.length, 1)
   assert.deepEqual(artifact.sharedImports, [
+    '@cordisx/protocol/managed-service-ui/v1',
     'cordisx/contracts',
     'cordisx/react',
     'cordisx/react/jsx-runtime',
@@ -15,7 +16,7 @@ test('production graph retains the plugin-owned stylesheet', async () => {
   ])
 
   const stylesheet = await readFile(new URL(`../dist/runtime/${artifact.initialStyles[0]}`, import.meta.url), 'utf8')
-  assert.match(stylesheet, /\.cxp-fleet/)
-  assert.match(stylesheet, /\.cxp-toolbar-action/)
+  assert.match(stylesheet, /\.cus\{/)
+  assert.match(stylesheet, /\.cus-button\{/)
   assert.doesNotMatch(stylesheet, /\.cxr-|\.cxm-/)
 })

@@ -4,18 +4,19 @@
 
 ## 交付状态
 
-本版本包含独立 renderer 与可执行的 package-v13 `platform-provider` 服务。
-Renderer 只使用公开的 Host React、UI 和 `ctx.platform` 合同；Node 服务只使用
-公开 Protocol broker 与 `ctx.platformProviders.register`。CLIProxy 的方法声明、
-响应投影、生命周期和审批适配均由本仓库维护。
+本版本包含独立 renderer、可执行的 `platform-provider` 服务和 package-v14 托管网关
+runtime。Renderer 只使用公开的 Host React、UI 和服务合同；Node 服务只使用公开
+Protocol 与 Host 托管服务 API。CLIProxy 的方法声明、响应投影、生命周期、上游组合和
+账号控制均由本仓库维护。
 
 Host 负责 endpoint 与凭据解析、进程启动、不透明 workspace handle、方法/Schema
 策略、配置持久化和唯一的 Provider Fleet。插件不会获得 endpoint、凭据、进程、
 文件系统路径、原始 transport 或 Fleet handle。
 
-插件精确固定 Protocol `c2f6f8e4bf4a638bf4627c9c567792f2fedbcfd6`，并要求 Host
-支持 manifest/package v13 的 exact-request scope。包继续保持 `private` 以阻止 npm
-发布；manifest 声明显式本地源码分发，目前仍未提供安装包。
+插件当前固定实验性 Protocol review head
+`a1127780513b76f0c3b1acee70cd638b5348c6a5` 和 Host review head
+`6afdc0353a23f7e88d7e67fff23590552457078a`。这些公开依赖尚未合并或发布。包继续保持
+`private` 以阻止 npm 发布；manifest 声明显式本地源码分发，目前仍未提供安装包。
 
 ## 开发
 

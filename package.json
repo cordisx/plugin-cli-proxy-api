@@ -7,6 +7,8 @@
   "type": "module",
   "files": [
     "dist",
+    "config",
+    "schemas",
     "cordisx-package.json",
     "runtime-manifest.json",
     "README.md",
@@ -21,11 +23,21 @@
       "types": "./dist/types/index.d.ts",
       "import": "./dist/runtime/module.js",
       "default": "./dist/runtime/module.js"
+    },
+    "./upstream/v1": {
+      "types": "./dist/types/service/upstream-registry.d.ts",
+      "import": "./dist/service.mjs",
+      "default": "./dist/service.mjs"
+    },
+    "./gateway/v1": {
+      "types": "./dist/types/service/gateway.d.ts",
+      "import": "./dist/gateway.mjs",
+      "default": "./dist/gateway.mjs"
     }
   },
   "scripts": {
     "build": "rm -rf dist && node scripts/sync-package-manifest.mjs && vite build && tsc -p tsconfig.json --emitDeclarationOnly && node scripts/build-service.mjs",
-    "check": "npm run typecheck && npm run build && npm test && npm run lint && npm run stylelint && npm run format:check",
+    "check": "npm run typecheck && npm run build && npm run typecheck:consumer && npm test && npm run lint && npm run stylelint && npm run format:check",
     "dev": "cordisx dev --config cordisx.config.json",
     "dev:dry-run": "cordisx dev --config cordisx.config.json --dry-run",
     "format": "dprint fmt",
@@ -34,17 +46,18 @@
     "stylelint": "stylelint \"src/**/*.css\" --allow-empty-input",
     "test": "node --test test/*.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:consumer": "tsc -p test/upstream-consumer/tsconfig.json --noEmit",
     "prepare": "npm run build"
   },
   "devDependencies": {
     "@cordisx/eslint-config": "github:cordisx/cordisxmono#c63c2e8c2ba7e11502934a52ad2ce3734e804cdc",
-    "@cordisx/protocol": "github:cordisx/cordisx-protocol#f46dd21e15a949a26f05f89bf11dea339fc60c02",
+    "@cordisx/protocol": "github:cordisx/cordisx-protocol#a1127780513b76f0c3b1acee70cd638b5348c6a5",
     "@deepseek-ai/cordis": "4.0.1",
     "@deepseek-ai/schemastery": "3.18.1",
     "@projectwallace/stylelint-plugin": "0.7.0",
     "@typescript-eslint/parser": "8.69.0",
     "@vitejs/plugin-react": "6.1.0",
-    "cordisx": "github:cordisx/cordisx#3cfe370eb7abf33e16686fbd82659cd441247fbd",
+    "cordisx": "github:cordisx/cordisx#6afdc0353a23f7e88d7e67fff23590552457078a",
     "dprint": "0.57.1",
     "eslint": "9.39.4",
     "stylelint": "17.15.0",

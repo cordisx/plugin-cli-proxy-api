@@ -37,7 +37,7 @@ interface Messages {
   'state.empty': undefined
   'state.no-models': undefined
   'state.select-session': undefined
-  'state.error': undefined
+  'state.error': { readonly message: string }
   'session.provider': { readonly provider: string }
   'session.model': { readonly model: string }
 }
@@ -78,10 +78,8 @@ export function createProviderFleetPage(ctx: Context, config: Config) {
     const [steer, setSteer] = useState('')
     const [status, setStatus] = useState('')
 
-    const showError = (_error: { readonly message: string }) => {
-      setStatus('')
-      ctx.notifications.show({ kind: 'provider.request-failed', type: 'error', message: props.t('state.error') })
-    }
+    const showError = (error: { readonly message: string }) =>
+      setStatus(props.t('state.error', { message: error.message }))
     const providerIds = provider === ''
       ? configuredProviders ?? [...new Set(models.map(item => item.ref.providerId))].sort()
       : [provider]
