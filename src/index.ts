@@ -43,7 +43,7 @@ const CLI_PROXY_MODEL_PROVIDER_ICON = {
     encoding: 'base64',
     data: CLI_PROXY_ICON.data,
     width: 256,
-    height: 210,
+    height: 256,
   },
 } as const satisfies BrandIconV1
 

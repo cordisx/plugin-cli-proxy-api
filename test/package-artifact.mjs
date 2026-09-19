@@ -131,6 +131,7 @@ test('packs gateway runtime data resources into the tarball', async () => {
   })
   const [{ files }] = JSON.parse(stdout)
   const archiveFiles = new Set(files.map(file => file.path))
+  assert.equal(archiveFiles.has('assets/icon.png'), true, 'tarball is missing the plugin brand PNG')
   for (const resource of gatewayRuntimeResources) {
     const path = resource.path.slice(2)
     assert.equal(archiveFiles.has(path), true, `tarball is missing ${path}`)

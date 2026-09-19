@@ -64,6 +64,14 @@ async function loadModelProviderRegistry() {
   return await import(`data:text/javascript;base64,${source}`)
 }
 
+test('bundles the plugin-owned 256px brand PNG for Host plugin lists', async () => {
+  const source = await readFile(new URL('../assets/icon.png', import.meta.url))
+  assert.equal(plugin.icon.mediaType, 'image/png')
+  assert.deepEqual(Buffer.from(plugin.icon.data, 'base64'), source)
+  assert.equal(source.readUInt32BE(16), 256)
+  assert.equal(source.readUInt32BE(20), 256)
+})
+
 test('exports the CLIProxy renderer manifest through public Host contracts', () => {
   assert.equal(plugin.manifest.schemaVersion, 1)
   assert.equal(plugin.manifest.id, 'cli-proxy-api')
@@ -188,7 +196,7 @@ test('registers CLIProxyAPI branding and Manager settings without a Provider ses
         encoding: 'base64',
         data: plugin.icon.data,
         width: 256,
-        height: 210,
+        height: 256,
       },
     },
   })
