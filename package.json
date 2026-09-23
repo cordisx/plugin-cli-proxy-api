@@ -9,6 +9,7 @@
     "dist",
     "assets",
     "config",
+    "runtime",
     "schemas",
     "cordisx-package.json",
     "runtime-manifest.json",
@@ -34,10 +35,15 @@
       "types": "./dist/types/service/gateway.d.ts",
       "import": "./dist/gateway.mjs",
       "default": "./dist/gateway.mjs"
+    },
+    "./extensions/v1": {
+      "types": "./dist/types/service/extension-registry.d.ts",
+      "import": "./dist/extensions.mjs",
+      "default": "./dist/extensions.mjs"
     }
   },
   "scripts": {
-    "build": "rm -rf dist && node scripts/sync-package-manifest.mjs && vite build && tsc -p tsconfig.json --emitDeclarationOnly && node scripts/build-service.mjs",
+    "build": "rm -rf dist && node scripts/build-native.mjs && node scripts/sync-runtime-resources.mjs && node scripts/sync-package-manifest.mjs && vite build && tsc -p tsconfig.json --emitDeclarationOnly && node scripts/build-service.mjs",
     "check": "npm run typecheck && npm run build && npm run typecheck:consumer && npm test && npm run lint && npm run stylelint && npm run format:check",
     "dev": "cordisx dev --config cordisx.config.json",
     "dev:dry-run": "cordisx dev --config cordisx.config.json --dry-run",
@@ -46,6 +52,7 @@
     "lint": "eslint .",
     "stylelint": "stylelint \"src/**/*.css\" --allow-empty-input",
     "test": "node --test test/*.mjs",
+    "test:native": "node scripts/build-native.mjs && node scripts/test-native-integration.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "typecheck:consumer": "tsc -p test/upstream-consumer/tsconfig.json --noEmit",
     "prepare": "npm run build"

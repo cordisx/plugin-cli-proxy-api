@@ -13,44 +13,19 @@ const execFileAsync = promisify(execFile)
 const schemas = process.env.CORDISX_PROTOCOL_ROOT === undefined
   ? new URL('../node_modules/@cordisx/protocol/schemas/', import.meta.url)
   : new URL('schemas/', pathToFileURL(`${resolve(process.env.CORDISX_PROTOCOL_ROOT)}/`))
-const gatewayRuntimeResources = [
-  {
-    path: './config/cli-proxy-api.yaml',
-    mode: 'data',
-    digest: 'sha256:4e2806a2c9a4a490f8685ffc96cf1dc40010248a8d25437b718249f3275b198e',
-    byteLength: 268,
-  },
-  {
-    path: './schemas/cli-proxy-gateway-model-catalog.v1.schema.json',
-    mode: 'data',
-    digest: 'sha256:b20bf7d388ae1417eaa1e86186eab241c754fc54af3c3b4d5439308202194b30',
-    byteLength: 639,
-  },
-  {
-    path: './schemas/cli-proxy-gateway-codex-upstream.v1.schema.json',
-    mode: 'data',
-    digest: 'sha256:a9908de439af944ac24744721c117fd0c0a18c18e61355d343f8ad57311fafba',
-    byteLength: 1253,
-  },
-  {
-    path: './schemas/cli-proxy-gateway-openai-upstream.v1.schema.json',
-    mode: 'data',
-    digest: 'sha256:8f226eeaf778394f452c0c224bd163c1c68806f56c63982d0394c03d6be4483b',
-    byteLength: 1925,
-  },
-  {
-    path: './schemas/cli-proxy-management-auth-files.v1.schema.json',
-    mode: 'data',
-    digest: 'sha256:9785b09906567848143054d522b141f5f06234f7b16a8dc2a02ef31e6d58e76c',
-    byteLength: 370,
-  },
-  {
-    path: './schemas/cli-proxy-management-operation.v1.schema.json',
-    mode: 'data',
-    digest: 'sha256:c1a9e12cf48ee53825948b053ea364ce70d09122321502560defebeb3d8d0c12',
-    byteLength: 218,
-  },
+const gatewayResourcePaths = [
+  './config/cli-proxy-api.yaml',
+  './schemas/cli-proxy-gateway-model-catalog.v1.schema.json',
+  './schemas/cli-proxy-gateway-codex-upstream.v1.schema.json',
+  './schemas/cli-proxy-gateway-openai-upstream.v1.schema.json',
+  './schemas/cli-proxy-gateway-adapter.v1.schema.json',
+  './schemas/cli-proxy-gateway-connection.v1.schema.json',
+  './schemas/cli-proxy-gateway-extension-plan.v1.schema.json',
+  './schemas/cli-proxy-management-auth-files.v1.schema.json',
+  './schemas/cli-proxy-management-operation.v1.schema.json',
 ]
+const nativeResourceRoot = new URL('../runtime/cli-proxy-plugins/', import.meta.url)
+const nativeExtensions = { darwin: 'dylib', linux: 'so', win32: 'dll' }
 
 const gatewayConsumerOperations = [
   'gateway.models.list',
@@ -106,19 +81,48 @@ test('publishes schema-valid v14 package and runtime manifests with exact reques
   for (const service of runtimeManifest.services) {
     await readFile(new URL(`..${service.entry.slice(1)}`, import.meta.url))
   }
-  assert.deepEqual(runtimeManifest.services[1], {
+  const gateway = runtimeManifest.services[1]
+  assert.deepEqual({ ...gateway, runtimeResources: undefined }, {
     id: 'gateway-runtime',
     kind: 'managed-backend',
     owner: 'host',
     entry: './dist/gateway.mjs',
     definitionSchema:
       'https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/managed-service-definition.v1.schema.json',
-    runtimeResources: gatewayRuntimeResources,
+    runtimeResources: undefined,
     consumerGrants: [{ pluginId: 'cli-proxy-api', operations: gatewayConsumerOperations }],
   })
-  for (const resource of runtimeManifest.services[1].runtimeResources) {
+  assert.deepEqual(
+    gateway.runtimeResources.filter(resource => resource.mode === 'data').map(resource => resource.path),
+    gatewayResourcePaths,
+  )
+  const executableResources = gateway.runtimeResources.filter(resource => resource.mode === 'executable')
+  const actualExecutablePaths = []
+  for (const platform of await readdir(nativeResourceRoot)) {
+    for (const architecture of await readdir(new URL(`${platform}/`, nativeResourceRoot))) {
+      const directory = new URL(`${platform}/${architecture}/`, nativeResourceRoot)
+      for (const file of await readdir(directory)) {
+        if (/^cordisx-gateway-bridge\.(?:dylib|so|dll)$/.test(file)) {
+          actualExecutablePaths.push(`./runtime/cli-proxy-plugins/${platform}/${architecture}/${file}`)
+        }
+      }
+    }
+  }
+  assert.deepEqual(executableResources.map(resource => resource.path).sort(), actualExecutablePaths.sort())
+  for (const resource of executableResources) {
+    const match =
+      /^\.\/runtime\/cli-proxy-plugins\/(darwin|linux|win32)\/(arm64|x64)\/cordisx-gateway-bridge\.(dylib|so|dll)$/
+        .exec(
+          resource.path,
+        )
+    assert.notEqual(match, null, `invalid native resource path ${resource.path}`)
+    const [, platform, architecture, extension] = match
+    assert.equal(extension, nativeExtensions[platform], `native resource extension does not match ${platform}`)
+    assert.deepEqual(resource.platforms, [platform])
+    assert.deepEqual(resource.architectures, [architecture])
+  }
+  for (const resource of gateway.runtimeResources) {
     const bytes = await readFile(new URL(`../${resource.path.slice(2)}`, import.meta.url))
-    assert.equal(resource.mode, 'data')
     assert.equal(resource.byteLength, bytes.byteLength)
     assert.equal(resource.digest, `sha256:${createHash('sha256').update(bytes).digest('hex')}`)
   }
@@ -132,6 +136,9 @@ test('packs gateway runtime data resources into the tarball', async () => {
   const [{ files }] = JSON.parse(stdout)
   const archiveFiles = new Set(files.map(file => file.path))
   assert.equal(archiveFiles.has('assets/icon.png'), true, 'tarball is missing the plugin brand PNG')
+  const runtimeManifest = JSON.parse(await readFile(new URL('../runtime-manifest.json', import.meta.url), 'utf8'))
+  const gatewayRuntimeResources =
+    runtimeManifest.services.find(service => service.id === 'gateway-runtime').runtimeResources
   for (const resource of gatewayRuntimeResources) {
     const path = resource.path.slice(2)
     assert.equal(archiveFiles.has(path), true, `tarball is missing ${path}`)
@@ -146,7 +153,7 @@ test('packs gateway runtime data resources into the tarball', async () => {
   }
 })
 
-test('publishes the versioned upstream registration entrypoint', async () => {
+test('publishes the versioned upstream and gateway extension registration entrypoints', async () => {
   const packageManifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
   assert.deepEqual(packageManifest.exports['./upstream/v1'], {
     types: './dist/types/service/upstream-registry.d.ts',
@@ -156,6 +163,14 @@ test('publishes the versioned upstream registration entrypoint', async () => {
   const upstream = await import('@cordisx/plugin-cli-proxy-api/upstream/v1')
   assert.equal(upstream.CLI_PROXY_UPSTREAM_REGISTRY_SERVICE_V1, 'cliProxyUpstreams')
   assert.equal(typeof upstream.CliProxyUpstreamRegistryV1, 'function')
+  assert.deepEqual(packageManifest.exports['./extensions/v1'], {
+    types: './dist/types/service/extension-registry.d.ts',
+    import: './dist/extensions.mjs',
+    default: './dist/extensions.mjs',
+  })
+  const extensions = await import('@cordisx/plugin-cli-proxy-api/extensions/v1')
+  assert.equal(extensions.CLI_PROXY_GATEWAY_EXTENSION_REGISTRY_SERVICE_V1, 'cliProxyGatewayExtensions')
+  assert.equal(typeof extensions.CliProxyGatewayExtensionRegistryV1, 'function')
 })
 
 test('publishes the managed gateway Node module and public Protocol context ABI', async () => {
@@ -166,8 +181,11 @@ test('publishes the managed gateway Node module and public Protocol context ABI'
     default: './dist/gateway.mjs',
   })
   const gateway = await import('@cordisx/plugin-cli-proxy-api/gateway/v1')
-  assert.equal(gateway.contextServices[0].service, 'cliProxyUpstreams')
-  assert.deepEqual(gateway.apply.inject, ['managedServices', 'cliProxyUpstreams'])
+  assert.deepEqual(gateway.contextServices.map(service => service.service), [
+    'cliProxyUpstreams',
+    'cliProxyGatewayExtensions',
+  ])
+  assert.deepEqual(gateway.apply.inject, ['managedServices', 'cliProxyUpstreams', 'cliProxyGatewayExtensions'])
 })
 
 test('publishes a schema-valid managed gateway definition', async () => {

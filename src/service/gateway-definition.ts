@@ -7,6 +7,8 @@ export const CLI_PROXY_GATEWAY_CODEX_UPSTREAMS_SCHEMA_V1 =
   'https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-gateway-codex-upstream.v1.schema.json' as const
 export const CLI_PROXY_GATEWAY_OPENAI_UPSTREAMS_SCHEMA_V1 =
   'https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-gateway-openai-upstream.v1.schema.json' as const
+export const CLI_PROXY_GATEWAY_EXTENSION_PLAN_SCHEMA_V1 =
+  'https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-gateway-extension-plan.v1.schema.json' as const
 const CLI_PROXY_MANAGEMENT_AUTH_FILES_SCHEMA_V1 =
   'https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-management-auth-files.v1.schema.json' as const
 const CLI_PROXY_MANAGEMENT_OPERATION_SCHEMA_V1 =
@@ -68,6 +70,13 @@ export const cliProxyGatewayDefinition = {
       target: 'configuration',
       pointer: '/openai-compatibility',
       valueSchema: CLI_PROXY_GATEWAY_OPENAI_UPSTREAMS_SCHEMA_V1,
+    },
+    {
+      slot: 'gateway-extensions',
+      source: 'composition',
+      target: 'configuration',
+      pointer: '/plugins/configs/cordisx-gateway-bridge',
+      valueSchema: CLI_PROXY_GATEWAY_EXTENSION_PLAN_SCHEMA_V1,
     },
   ],
   authentication: { mode: 'none' },

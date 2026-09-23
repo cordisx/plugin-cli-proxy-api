@@ -26,6 +26,9 @@ for the interaction contract and older-Host capability boundary.
 
 Dependency setup: [notification migration](./.agents/docs/notifications.md).
 
+Gateway extension architecture and verification:
+[gateway extensions](./.agents/docs/gateway-extensions.md).
+
 ## Development and release
 
 - Requires Node.js 22 or newer. Install dependencies with `npm ci`.

@@ -1,11 +1,26 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import Ajv2020 from 'ajv/dist/2020.js'
 import { binding, expectedNativeCatalog, identity, lease, projection, uiBinding } from './support/gateway-fixture.mjs'
+import {
+  activationInput,
+  compositionLeaves,
+  descriptor,
+  expectedRootCollections,
+  extensionAdapter,
+  extensionConnection,
+  providerRoot,
+  rootCollections,
+  syntheticExtensions,
+  syntheticSources,
+  validateMaterializationRequest,
+} from './support/gateway-extension-fixture.mjs'
 
 const gatewayModule = await import('../dist/gateway.mjs')
 const {
+  CLI_PROXY_GATEWAY_ADAPTER_CONTRACT_V1,
+  CLI_PROXY_GATEWAY_ADAPTER_SCHEMA_V1,
+  CLI_PROXY_GATEWAY_CONNECTION_CONTRACT_V1,
+  CLI_PROXY_GATEWAY_CONNECTION_SCHEMA_V1,
   CLI_PROXY_UPSTREAM_DESCRIPTOR_CONTRACT_V1,
   CLI_PROXY_UPSTREAM_DESCRIPTOR_SCHEMA_V1,
   CLI_PROXY_UPSTREAM_REGISTRY_SERVICE_V1,
@@ -39,117 +54,6 @@ test('declares a separate Host-private CLIProxyAPI management credential', () =>
   )
 })
 
-const compositionSchemaFiles = new Map([
-  ['codex-upstreams', '../schemas/cli-proxy-gateway-codex-upstream.v1.schema.json'],
-  ['openai-upstreams', '../schemas/cli-proxy-gateway-openai-upstream.v1.schema.json'],
-])
-const compositionValidators = new Map(
-  await Promise.all([...compositionSchemaFiles].map(async ([slot, file]) => {
-    const schema = JSON.parse(await readFile(new URL(file, import.meta.url), 'utf8'))
-    return [slot, new Ajv2020({ allErrors: true, strict: true }).compile(schema)]
-  })),
-)
-
-const syntheticSources = Object.freeze({
-  responses: Object.freeze({
-    pluginId: 'synthetic-responses',
-    pluginGeneration: 'synthetic-responses-one',
-    serviceId: 'synthetic-responses-service',
-    serviceGeneration: 'synthetic-responses-service-one',
-    upstreamId: 'responses-source',
-    displayName: 'Synthetic Responses',
-    prefix: 'responses',
-    wireApi: 'responses',
-    sourceModelId: 'responses-model',
-    modelId: 'family/fast',
-    authenticated: false,
-  }),
-  chat: Object.freeze({
-    pluginId: 'synthetic-chat',
-    pluginGeneration: 'synthetic-chat-one',
-    serviceId: 'synthetic-chat-service',
-    serviceGeneration: 'synthetic-chat-service-one',
-    upstreamId: 'chat-source',
-    displayName: 'Synthetic Chat',
-    prefix: 'chat',
-    wireApi: 'chat-completions',
-    sourceModelId: 'chat-model',
-    modelId: 'family/balanced',
-    authenticated: true,
-  }),
-})
-
-const descriptor = (source, overrides = {}) => ({
-  $schema: CLI_PROXY_UPSTREAM_DESCRIPTOR_SCHEMA_V1,
-  contract: CLI_PROXY_UPSTREAM_DESCRIPTOR_CONTRACT_V1,
-  schemaVersion: 1,
-  revision: 1,
-  upstreamId: source.upstreamId,
-  displayName: source.displayName,
-  enabled: true,
-  wireApi: source.wireApi,
-  prefix: source.prefix,
-  order: source.wireApi === 'responses' ? 10 : 20,
-  requestTimeoutMs: 30_000,
-  group: { groupId: 'synthetic', displayName: 'Synthetic', order: 10 },
-  models: [{
-    sourceModelId: source.sourceModelId,
-    modelId: source.modelId,
-    enabled: true,
-    isDefault: source.wireApi === 'responses',
-    ...(source.wireApi === 'chat-completions' ? { inputModalities: ['text'] } : {}),
-  }],
-  ...overrides,
-})
-
-function providerRoot() {
-  const controller = new AbortController()
-  const target = {
-    pluginId: 'cli-proxy-api',
-    pluginGeneration: 'gateway-generation',
-    serviceId: 'gateway-runtime',
-    serviceGeneration: 'gateway-service-generation',
-  }
-  return {
-    controller,
-    target,
-    root: contextServices[0].create({ target, signal: controller.signal }),
-  }
-}
-
-function validateMaterializationRequest(request) {
-  const compositionSlots = cliProxyGatewayDefinition.protectedBindings.filter(item => item.source === 'composition')
-  const declaredSources = new Set(request.sources.map(source => source.source))
-  for (const slot of compositionSlots) {
-    const slotBindings = request.bindings.filter(binding => binding.targetSlot === slot.slot)
-    assert.ok(slotBindings.length > 0, `missing composition slot ${slot.slot}`)
-    const roots = slotBindings.filter(binding => binding.targetPointer === undefined)
-    assert.equal(roots.length, 1, `composition slot ${slot.slot} must have exactly one root binding`)
-    assert.equal(roots[0].source.kind, 'safe-literal')
-    const validate = compositionValidators.get(slot.slot)
-    assert.equal(validate(roots[0].source.value), true, JSON.stringify(validate.errors))
-  }
-  for (const item of request.bindings) {
-    if (item.source.kind === 'source-origin' || item.source.kind === 'source-authorization') {
-      assert.equal(declaredSources.has(item.source.source), true, `undeclared composition source ${item.source.source}`)
-    }
-  }
-}
-
-function activationInput(client, signal) {
-  return {
-    owner: {
-      ownerHandle: 'mso_gateway',
-      pluginId: 'cli-proxy-api',
-      sourceDigest: `sha256:${'a'.repeat(64)}`,
-      hostGeneration: 'host-one',
-      pluginGeneration: 'gateway-generation',
-    },
-    client,
-    signal,
-  }
-}
-
 function gatewayFixture({
   kinds = ['responses', 'chat'],
   gatewayModels = [],
@@ -164,7 +68,7 @@ function gatewayFixture({
   publicationDisposeError,
   publicationDisposeDiagnostic,
 } = {}) {
-  const { root, target } = providerRoot()
+  const { root, extensionRoot, target } = providerRoot()
   const sources = []
   let ownedGatewayModels = [...gatewayModels]
   let oauthPollIndex = 0
@@ -184,6 +88,35 @@ function gatewayFixture({
       descriptor: descriptor(source),
     })
     assert.equal(result.status, 'registered')
+  }
+  const registerExtension = ({ adapter, connection, source: extensionSource }) => {
+    const sourceLease = lease(
+      extensionSource.pluginId,
+      extensionSource.serviceId,
+      extensionSource.serviceGeneration,
+    )
+    sourceLeases.set(extensionSource.serviceId, sourceLease)
+    sourceByService.set(extensionSource.serviceId, extensionSource)
+    const consumer = extensionRoot.bind({
+      producer: { pluginId: extensionSource.pluginId, pluginGeneration: extensionSource.pluginGeneration },
+      target,
+      signal: new AbortController().signal,
+    })
+    assert.match(consumer.value.registerAdapter(adapter).status, /^(?:registered|updated|unchanged)$/)
+    assert.match(
+      consumer.value.registerConnection({
+        ...connection,
+        source: identity(extensionSource.pluginId, extensionSource.serviceId),
+      }).status,
+      /^(?:registered|updated|unchanged)$/,
+    )
+    if (connection.enabled) {
+      ownedGatewayModels = [
+        ...ownedGatewayModels,
+        ...connection.models.filter(model => model.enabled).map(model => `${connection.connectionId}/${model.modelId}`),
+      ]
+    }
+    return consumer
   }
   for (const kind of kinds) registerSource(syntheticSources[kind])
 
@@ -401,6 +334,7 @@ function gatewayFixture({
       },
     },
     cliProxyUpstreams: root.providerValue,
+    cliProxyGatewayExtensions: extensionRoot.providerValue,
   }
   const hostRevokePublication = providerId => {
     activePublications.delete(providerId)
@@ -423,6 +357,7 @@ function gatewayFixture({
     publicationDisposeResults,
     publicationHandles,
     registerSource,
+    registerExtension,
     registration,
     released,
     sources,
@@ -431,56 +366,14 @@ function gatewayFixture({
   }
 }
 
-function rootCollections(request) {
-  return Object.fromEntries(
-    request.bindings.filter(item => item.targetPointer === undefined).map(item => [
-      item.targetSlot,
-      item.source.value,
-    ]),
-  )
-}
-
-function compositionLeaves(request) {
-  return request.bindings.filter(item => item.targetPointer !== undefined)
-}
-
-function expectedRootCollections(sources) {
-  return {
-    'codex-upstreams': sources.filter(source => source.wireApi === 'responses').map(source => ({
-      'api-key': null,
-      prefix: source.prefix,
-      'base-url': null,
-      'request-retry': 0,
-      models: [{
-        name: source.sourceModelId,
-        alias: source.modelId,
-        'display-name': source.modelId,
-        'force-mapping': true,
-      }],
-    })),
-    'openai-upstreams': sources.filter(source => source.wireApi === 'chat-completions').map(source => ({
-      name: source.upstreamId,
-      disabled: false,
-      prefix: source.prefix,
-      'base-url': null,
-      'api-key-entries': [{ 'api-key': null }],
-      'request-retry': 0,
-      models: [{
-        name: source.sourceModelId,
-        alias: source.modelId,
-        'display-name': source.modelId,
-        'force-mapping': true,
-        'input-modalities': ['text'],
-      }],
-    })),
-  }
-}
-
-test('exports one versioned context service with owner-local registry access', () => {
-  assert.equal(contextServices.length, 1)
-  assert.equal(contextServices[0].service, CLI_PROXY_UPSTREAM_REGISTRY_SERVICE_V1)
-  const { root } = providerRoot()
+test('exports two versioned context services with owner-local registry access', () => {
+  assert.deepEqual(contextServices.map(service => service.service), [
+    CLI_PROXY_UPSTREAM_REGISTRY_SERVICE_V1,
+    'cliProxyGatewayExtensions',
+  ])
+  const { root, extensionRoot } = providerRoot()
   assert.equal(root.providerValue.pluginGeneration, 'gateway-generation')
+  assert.equal(extensionRoot.providerValue.pluginGeneration, 'gateway-generation')
 })
 
 test('projects the active upstream registry through the Node UI source without exposing secrets', async () => {
@@ -727,7 +620,8 @@ for (
     assert.equal(request.revision, fixture.events.find(event => event[0] === 'register')[2].revision)
     assert.deepEqual(request.sources.map(source => source.source), fixture.sources.map(source => source.upstreamId))
     const roots = rootCollections(request)
-    assert.deepEqual(roots, expectedRootCollections(fixture.sources))
+    assert.match(roots['gateway-extensions'].revision, /^sha256:[0-9a-f]{64}$/)
+    assert.deepEqual(roots, expectedRootCollections(fixture.sources, roots['gateway-extensions'].revision))
     assert.deepEqual(
       compositionLeaves(request),
       fixture.sources.flatMap(source => {
@@ -777,9 +671,18 @@ test('starts without upstreams and publishes account-backed gateway models immed
 
   assert.equal(fixture.events.filter(event => event[0] === 'register').length, 1)
   assert.equal(fixture.events.filter(event => event[0] === 'materialize').length, 1)
-  assert.deepEqual(rootCollections(fixture.events.find(event => event[0] === 'materialize')[1]), {
+  const roots = rootCollections(fixture.events.find(event => event[0] === 'materialize')[1])
+  assert.match(roots['gateway-extensions'].revision, /^sha256:[0-9a-f]{64}$/)
+  assert.deepEqual(roots, {
     'codex-upstreams': [],
     'openai-upstreams': [],
+    'gateway-extensions': {
+      enabled: true,
+      active: false,
+      revision: roots['gateway-extensions'].revision,
+      adapters: [],
+      connections: [],
+    },
   })
   assert.deepEqual(fixture.events.filter(event => event[0] === 'publish-native').map(event => event[1]), [{
     providerId: CLI_PROXY_NATIVE_PROVIDER_ID,
@@ -834,6 +737,83 @@ test('registry changes rematerialize and republish only the CLIProxyAPI provider
     fixture.events.filter(event => event[0] === 'publication-dispose'),
     [['publication-dispose', CLI_PROXY_NATIVE_PROVIDER_ID]],
   )
+
+  await fixture.lifecycle.cleanup()
+})
+
+test('extension registry materializes two exact protected connections and serializes each restart', async () => {
+  const fixture = gatewayFixture({ kinds: [] })
+  await activateCliProxyGateway(
+    fixture.context,
+    activationInput(fixture.client, new AbortController().signal),
+  )
+
+  fixture.registerExtension({
+    adapter: extensionAdapter('header-session', [{ kind: 'header', name: 'Session-Id' }]),
+    connection: extensionConnection('connection-a', 'header-session'),
+    source: syntheticExtensions.header,
+  })
+  await new Promise(resolve => setTimeout(resolve, 0))
+  fixture.registerExtension({
+    adapter: extensionAdapter('body-session', [{ kind: 'body-json-pointer', pointer: '/metadata/thread' }]),
+    connection: extensionConnection('connection-b', 'body-session'),
+    source: syntheticExtensions.body,
+  })
+  await new Promise(resolve => setTimeout(resolve, 0))
+
+  const materializations = fixture.events.filter(event => event[0] === 'materialize')
+  assert.equal(materializations.length, 3)
+  const request = materializations.at(-1)[1]
+  assert.deepEqual(request.sources.map(source => source.source), ['extension-0', 'extension-1'])
+  assert.deepEqual(compositionLeaves(request), [
+    {
+      targetSlot: 'gateway-extensions',
+      targetPointer: '/connections/0/endpoint',
+      source: { kind: 'source-origin', source: 'extension-0', origin: 'api' },
+    },
+    {
+      targetSlot: 'gateway-extensions',
+      targetPointer: '/connections/0/credential',
+      source: { kind: 'source-authorization', source: 'extension-0' },
+    },
+    {
+      targetSlot: 'gateway-extensions',
+      targetPointer: '/connections/1/endpoint',
+      source: { kind: 'source-origin', source: 'extension-1', origin: 'api' },
+    },
+    {
+      targetSlot: 'gateway-extensions',
+      targetPointer: '/connections/1/credential',
+      source: { kind: 'source-authorization', source: 'extension-1' },
+    },
+  ])
+  const roots = rootCollections(request)
+  assert.equal(roots['gateway-extensions'].enabled, true)
+  assert.equal(roots['gateway-extensions'].active, true)
+  assert.deepEqual(roots['gateway-extensions'].adapters.map(adapter => adapter.adapterId), [
+    'body-session',
+    'header-session',
+  ])
+  assert.deepEqual(
+    roots['gateway-extensions'].connections.map(connection => ({
+      connectionId: connection.connectionId,
+      gatewayModelId: connection.models[0].gatewayModelId,
+      endpoint: connection.endpoint,
+      credential: connection.credential,
+    })),
+    [
+      { connectionId: 'connection-a', gatewayModelId: 'connection-a/shared', endpoint: null, credential: null },
+      { connectionId: 'connection-b', gatewayModelId: 'connection-b/shared', endpoint: null, credential: null },
+    ],
+  )
+  assert.equal(fixture.events.filter(event => event[0] === 'ensure-ready').length, 3)
+  assert.deepEqual(
+    fixture.events.filter(event => event[0] === 'publish-native').map(event =>
+      event[1].catalog.routes.map(route => route.alias)
+    ),
+    [['connection-a/shared'], ['connection-a/shared', 'connection-b/shared']],
+  )
+  assert.equal(fixture.events.filter(event => event[0] === 'publication-dispose').length, 1)
 
   await fixture.lifecycle.cleanup()
 })
