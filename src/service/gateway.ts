@@ -14,6 +14,12 @@ import type {
 } from '@cordisx/protocol/managed-service-runtime/v1'
 import { cliProxyGatewayDefinition } from './gateway-definition.js'
 import { bindGatewayUIState, managedServiceUI } from './gateway-ui.js'
+import { createCliProxyGatewayExtensionContextProviderV1 } from './extension-context.js'
+import {
+  CLI_PROXY_GATEWAY_EXTENSION_REGISTRY_SERVICE_V1,
+  type CliProxyGatewayExtensionPlanV1,
+  CliProxyGatewayExtensionRegistryV1,
+} from './extension-registry.js'
 import { createCliProxyUpstreamContextProviderV1 } from './upstream-context.js'
 import {
   CLI_PROXY_UPSTREAM_REGISTRY_SERVICE_V1,
@@ -24,16 +30,19 @@ import {
 } from './upstream-registry.js'
 
 export * from './gateway-definition.js'
+export * from './extension-registry.js'
 export * from './upstream-registry.js'
 
 export const contextServices: readonly ManagedServiceContextProviderV1[] = Object.freeze([
   createCliProxyUpstreamContextProviderV1(),
+  createCliProxyGatewayExtensionContextProviderV1(),
 ])
 export { managedServiceUI }
 export const CLI_PROXY_NATIVE_PROVIDER_ID = 'cli-proxy-api'
 
 export type CliProxyGatewayContextV1 = ManagedServiceServiceContextV1 & Pick<Fiber, 'effect'> & {
   readonly cliProxyUpstreams: CliProxyUpstreamRegistryV1<ManagedServiceIdentityV1>
+  readonly cliProxyGatewayExtensions: CliProxyGatewayExtensionRegistryV1<ManagedServiceIdentityV1>
 }
 
 function activationError(
@@ -47,6 +56,20 @@ function assertPlan(
   value: CliProxyGatewayPlanV1<ManagedServiceIdentityV1> | CliProxyRegistryDiagnosticV1,
 ): asserts value is CliProxyGatewayPlanV1<ManagedServiceIdentityV1> {
   if ('code' in value) throw new Error(`CLIProxyAPI gateway plan failed: ${value.code}`)
+}
+
+function assertExtensionPlan(
+  value: CliProxyGatewayExtensionPlanV1<ManagedServiceIdentityV1> | { readonly code: string },
+): asserts value is CliProxyGatewayExtensionPlanV1<ManagedServiceIdentityV1> {
+  if ('code' in value) throw new Error(`CLIProxyAPI gateway extension plan failed: ${value.code}`)
+}
+
+function combinedRevision(upstreamDigest: string, extensionDigest: string): `sha256:${string}` {
+  return `sha256:${createHash('sha256').update(JSON.stringify([upstreamDigest, extensionDigest])).digest('hex')}`
+}
+
+function safeValue(value: unknown): ManagedServiceSafeValueV1 {
+  return JSON.parse(JSON.stringify(value)) as ManagedServiceSafeValueV1
 }
 
 function modelIds(value: ManagedServiceSafeValueV1): ReadonlySet<string> {
@@ -99,9 +122,11 @@ export async function activateCliProxyGateway(
   input: ManagedServiceApplyInputV1,
 ): Promise<void> {
   const registry = context.cliProxyUpstreams
-  let active: { readonly revision: number; readonly dispose: () => Promise<void> } | undefined
+  const extensionRegistry = context.cliProxyGatewayExtensions
+  let active: { readonly revision: string; readonly dispose: () => Promise<void> } | undefined
   let transition = Promise.resolve()
   let unsubscribe = (): void => undefined
+  let unsubscribeExtensions = (): void => undefined
   let disposePromise: Promise<void> | undefined
   let gatewayHandle: ManagedServiceRegistrationHandleV1 | undefined
   let publication: ManagedNativeProviderPublicationHandleV1 | undefined
@@ -126,9 +151,11 @@ export async function activateCliProxyGateway(
   const activate = async (
     catalog: CliProxyModelCatalogV1,
     plan: CliProxyGatewayPlanV1<ManagedServiceIdentityV1>,
+    extensionPlan: CliProxyGatewayExtensionPlanV1<ManagedServiceIdentityV1>,
+    revision: `sha256:${string}`,
   ): Promise<() => Promise<void>> => {
     gatewayHandle ??= await context.managedServices.register(cliProxyGatewayDefinition, {
-      revision: plan.catalogDigest,
+      revision,
     })
     const handle = gatewayHandle
     const leases: ManagedServiceLeaseV1[] = []
@@ -176,6 +203,14 @@ export async function activateCliProxyGateway(
           )
         }
       }
+      for (const composition of extensionPlan.composition) {
+        const acquired = await input.client.acquire(composition.source, { signal: input.signal })
+        if (acquired.status !== 'ready') {
+          throw activationError(`${composition.connectionId} extension acquisition`, acquired)
+        }
+        leases.push(acquired.lease)
+        sources.push({ source: composition.sourceAlias, lease: acquired.lease })
+      }
 
       const bindings: Parameters<typeof input.client.materialize>[0]['bindings'][number][] = [
         {
@@ -185,6 +220,19 @@ export async function activateCliProxyGateway(
         {
           targetSlot: 'openai-upstreams',
           source: { kind: 'safe-literal', value: plan.configuration['openai-compatibility'] },
+        },
+        {
+          targetSlot: 'gateway-extensions',
+          source: {
+            kind: 'safe-literal',
+            value: safeValue({
+              enabled: true,
+              active: extensionPlan.composition.length > 0,
+              revision: extensionPlan.planDigest,
+              adapters: extensionPlan.configuration.adapters,
+              connections: extensionPlan.configuration.connections,
+            }),
+          },
         },
       ]
       for (const composition of plan.composition) {
@@ -204,10 +252,24 @@ export async function activateCliProxyGateway(
           })
         }
       }
+      for (const composition of extensionPlan.composition) {
+        bindings.push({
+          targetSlot: 'gateway-extensions',
+          targetPointer: composition.originPointer,
+          source: { kind: 'source-origin', source: composition.sourceAlias, origin: 'api' },
+        })
+        if (composition.authorizationPointer !== undefined) {
+          bindings.push({
+            targetSlot: 'gateway-extensions',
+            targetPointer: composition.authorizationPointer,
+            source: { kind: 'source-authorization', source: composition.sourceAlias },
+          })
+        }
+      }
 
       const materialized = await input.client.materialize({
         target: handle.binding,
-        revision: plan.catalogDigest,
+        revision,
         sources,
         bindings,
       }, { signal: input.signal })
@@ -225,6 +287,10 @@ export async function activateCliProxyGateway(
       const actualGatewayModels = await readGatewayModels()
       const expectedGatewayModels = catalog.groups.flatMap(group =>
         group.providers.flatMap(provider => provider.models.map(model => model.gatewayModelId))
+      ).concat(
+        extensionPlan.configuration.connections.flatMap(connection =>
+          connection.enabled ? connection.models.map(model => model.gatewayModelId) : []
+        ),
       )
       const missingGatewayModels = expectedGatewayModels.filter(model => !actualGatewayModels.has(model))
       if (missingGatewayModels.length > 0) {
@@ -296,7 +362,10 @@ export async function activateCliProxyGateway(
     if (input.signal.aborted) return
     const catalog = registry.catalog(input.owner.pluginGeneration)
     if ('code' in catalog) throw new Error(`CLIProxyAPI catalog failed: ${catalog.code}`)
-    if (active?.revision === catalog.registryRevision) return
+    const extensionPlan = extensionRegistry.plan(input.owner.pluginGeneration)
+    assertExtensionPlan(extensionPlan)
+    const revision = combinedRevision(catalog.catalogDigest, extensionPlan.planDigest)
+    if (active?.revision === revision) return
     const previous = active
     active = undefined
     activeRevision = undefined
@@ -306,18 +375,18 @@ export async function activateCliProxyGateway(
 
     if (gatewayHandle === undefined) {
       gatewayHandle = await context.managedServices.register(cliProxyGatewayDefinition, {
-        revision: plan.catalogDigest,
+        revision,
       })
     }
 
     if (input.signal.aborted) return
 
-    const cleanup = await activate(catalog, plan)
+    const cleanup = await activate(catalog, plan, extensionPlan, revision)
     if (input.signal.aborted) {
       await cleanup()
       return
     }
-    active = { revision: catalog.registryRevision, dispose: cleanup }
+    active = { revision, dispose: cleanup }
   }
 
   const schedule = (): Promise<void> => {
@@ -339,6 +408,7 @@ export async function activateCliProxyGateway(
     if (disposePromise !== undefined) return disposePromise
     disposePromise = (async () => {
       unsubscribe()
+      unsubscribeExtensions()
       unbindGatewayUIState()
       await transition
       const failures: unknown[] = []
@@ -368,6 +438,9 @@ export async function activateCliProxyGateway(
 
   try {
     unsubscribe = registry.subscribe(() => {
+      void schedule().catch(() => undefined)
+    })
+    unsubscribeExtensions = extensionRegistry.subscribe(() => {
       void schedule().catch(() => undefined)
     })
     const onAbort = (): void => {
@@ -402,5 +475,9 @@ const gatewayApply: ManagedServiceApplyV1 = async (context, input) => {
 }
 
 export const apply = Object.assign(gatewayApply, {
-  inject: ['managedServices', CLI_PROXY_UPSTREAM_REGISTRY_SERVICE_V1] as const,
+  inject: [
+    'managedServices',
+    CLI_PROXY_UPSTREAM_REGISTRY_SERVICE_V1,
+    CLI_PROXY_GATEWAY_EXTENSION_REGISTRY_SERVICE_V1,
+  ] as const,
 })

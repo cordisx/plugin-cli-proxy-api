@@ -12,3 +12,10 @@ remote-management:
   disable-auto-update-panel: true
 codex-api-key: []
 openai-compatibility: []
+plugins:
+  enabled: true
+  dir: runtime/cli-proxy-plugins
+  configs:
+    cordisx-gateway-bridge:
+      enabled: true
+      active: false

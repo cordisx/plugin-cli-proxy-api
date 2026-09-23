@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-gateway-extension-plan.v1.schema.json",
+  "title": "CLIProxyAPI gateway bridge configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["enabled", "active", "revision", "adapters", "connections"],
+  "properties": {
+    "enabled": { "const": true },
+    "active": { "type": "boolean" },
+    "revision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "adapters": {
+      "type": "array",
+      "maxItems": 64,
+      "items": { "$ref": "cli-proxy-gateway-adapter.v1.schema.json" }
+    },
+    "connections": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "connectionId",
+          "revision",
+          "enabled",
+          "adapterId",
+          "adapterRevision",
+          "adapterRequired",
+          "adapterAvailable",
+          "wireApi",
+          "endpointPath",
+          "endpoint",
+          "authorization",
+          "credential",
+          "models"
+        ],
+        "properties": {
+          "connectionId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$" },
+          "revision": { "type": "integer", "minimum": 1 },
+          "enabled": { "type": "boolean" },
+          "adapterId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$" },
+          "adapterRevision": { "type": "integer", "minimum": 1 },
+          "adapterRequired": { "type": "boolean" },
+          "adapterAvailable": { "type": "boolean" },
+          "wireApi": { "enum": ["responses", "chat-completions"] },
+          "endpointPath": { "type": "string", "pattern": "^/(?!/)[^?#\\u0000-\\u001f\\u007f]{0,511}$" },
+          "endpoint": { "type": ["string", "null"], "format": "uri" },
+          "authorization": { "enum": ["none", "bearer"] },
+          "credential": { "type": ["string", "null"], "maxLength": 16384 },
+          "models": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 256,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["sourceModelId", "gatewayModelId", "displayName", "isDefault"],
+              "properties": {
+                "sourceModelId": { "type": "string", "minLength": 1, "maxLength": 256 },
+                "gatewayModelId": { "type": "string", "minLength": 3, "maxLength": 353 },
+                "displayName": { "type": "string", "minLength": 1, "maxLength": 200 },
+                "isDefault": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -69,8 +69,8 @@
         {
           "path": "./config/cli-proxy-api.yaml",
           "mode": "data",
-          "digest": "sha256:4e2806a2c9a4a490f8685ffc96cf1dc40010248a8d25437b718249f3275b198e",
-          "byteLength": 268
+          "digest": "sha256:1dee049ec7bc4b9ff9a6bf77e8d8a88136045d3fd9d25ac15acb2925502e424c",
+          "byteLength": 405
         },
         {
           "path": "./schemas/cli-proxy-gateway-model-catalog.v1.schema.json",
@@ -91,6 +91,24 @@
           "byteLength": 1925
         },
         {
+          "path": "./schemas/cli-proxy-gateway-adapter.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:178a7ad887b0400fdea8e143eb748e51bf491fff92381a9de186c9b41cf6a5a5",
+          "byteLength": 3011
+        },
+        {
+          "path": "./schemas/cli-proxy-gateway-connection.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:bbe81ec1a835586e67f7c9e7565a888a8120e55cbb1cc0a8d299b36831173abf",
+          "byteLength": 2371
+        },
+        {
+          "path": "./schemas/cli-proxy-gateway-extension-plan.v1.schema.json",
+          "mode": "data",
+          "digest": "sha256:398b8f8b05e16a39808f20829edc4f641f33409030faed18ab32bc2e420e05d1",
+          "byteLength": 2761
+        },
+        {
           "path": "./schemas/cli-proxy-management-auth-files.v1.schema.json",
           "mode": "data",
           "digest": "sha256:9785b09906567848143054d522b141f5f06234f7b16a8dc2a02ef31e6d58e76c",
@@ -101,6 +119,18 @@
           "mode": "data",
           "digest": "sha256:c1a9e12cf48ee53825948b053ea364ce70d09122321502560defebeb3d8d0c12",
           "byteLength": 218
+        },
+        {
+          "path": "./runtime/cli-proxy-plugins/darwin/arm64/cordisx-gateway-bridge.dylib",
+          "mode": "executable",
+          "digest": "sha256:da5786f5347f39f7ec1b19b60655a899885e884238a95a20b01d3b74fa1c2882",
+          "byteLength": 4553202,
+          "platforms": [
+            "darwin"
+          ],
+          "architectures": [
+            "arm64"
+          ]
         }
       ],
       "consumerGrants": [

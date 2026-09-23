@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-gateway-adapter.v1.schema.json",
+  "title": "CordisX CLIProxy Gateway Adapter v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "contract",
+    "schemaVersion",
+    "adapterId",
+    "revision",
+    "enabled",
+    "requiredSession",
+    "sessionSources",
+    "request"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/cordisx/plugin-cli-proxy-api/main/schemas/cli-proxy-gateway-adapter.v1.schema.json"
+    },
+    "contract": { "const": "cordisx.cli-proxy-gateway-adapter/v1" },
+    "schemaVersion": { "const": 1 },
+    "adapterId": { "$ref": "#/$defs/id" },
+    "revision": { "type": "integer", "minimum": 1 },
+    "enabled": { "type": "boolean" },
+    "requiredSession": { "type": "boolean" },
+    "sessionSources": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "name"],
+            "properties": {
+              "kind": { "const": "header" },
+              "name": { "$ref": "#/$defs/header" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "pointer"],
+            "properties": {
+              "kind": { "const": "body-json-pointer" },
+              "pointer": { "$ref": "#/$defs/pointer" }
+            }
+          }
+        ]
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "clearHeaders": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/header" }
+        },
+        "setHeaders": {
+          "type": "object",
+          "maxProperties": 64,
+          "propertyNames": { "$ref": "#/$defs/header" },
+          "additionalProperties": { "$ref": "#/$defs/template" }
+        },
+        "setBody": {
+          "type": "object",
+          "maxProperties": 64,
+          "propertyNames": { "$ref": "#/$defs/pointer" },
+          "additionalProperties": { "$ref": "#/$defs/template" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,95}$" },
+    "header": { "type": "string", "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$" },
+    "pointer": { "type": "string", "pattern": "^(?:/(?:[^~/]|~0|~1)*)+$", "maxLength": 512 },
+    "template": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string", "maxLength": 8192 },
+        { "type": "array", "maxItems": 128, "items": { "$ref": "#/$defs/template" } },
+        { "type": "object", "maxProperties": 128, "additionalProperties": { "$ref": "#/$defs/template" } }
+      ]
+    }
+  }
+}

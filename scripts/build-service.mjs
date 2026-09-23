@@ -6,6 +6,7 @@ await build({
   entryPoints: {
     service: new URL('../src/service/index.ts', import.meta.url).pathname,
     gateway: new URL('../src/service/gateway.ts', import.meta.url).pathname,
+    extensions: new URL('../src/service/extension-registry.ts', import.meta.url).pathname,
   },
   outdir: new URL('../dist/', import.meta.url).pathname,
   outExtension: { '.js': '.mjs' },
