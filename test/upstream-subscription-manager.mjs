@@ -59,8 +59,9 @@ test('page imports managed-service-ui/v1 and not temporary shim', () => {
 // Account subscription actions use accountControl
 // ---------------------------------------------------------------------------
 
-test('readAccounts/toggle/startOAuth/poll/cancel are wired to service.accountControl', () => {
-  assert.match(pageTsx, /accountControl\?\.readAccounts\(\)/)
+test('account reads are independent while account changes use accountControl', () => {
+  assert.match(pageTsx, /readManagedAccounts\(current\)/)
+  assert.match(pageTsx, /hasManagedAccountReader\(service\)/)
   assert.match(pageTsx, /accountControl\.toggleAccount\(/)
   assert.match(pageTsx, /accountControl\.startOAuth\(/)
   assert.match(pageTsx, /accountControl\.pollOAuth\(/)

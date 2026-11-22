@@ -17,6 +17,7 @@ import type {
   ManagedServiceV1,
 } from '@cordisx/protocol/managed-service-ui/v1'
 import { requestOwnPluginConfiguration } from './manager-configuration.js'
+import { hasManagedAccountReader, readManagedAccounts } from './managed-account-read.js'
 import './upstream-subscription-manager-page.css'
 
 const SERVICE_ID = 'gateway-runtime'
@@ -222,7 +223,7 @@ export function createUpstreamSubscriptionManagerPage(
         const [snapResult, catalogResult, accountsResult] = await Promise.all([
           current.snapshot(),
           current.readCatalog?.() ?? Promise.resolve(undefined),
-          current.accountControl?.readAccounts() ?? Promise.resolve(undefined),
+          readManagedAccounts(current),
         ])
 
         if (snapResult.status === 'available') {
@@ -675,7 +676,7 @@ export function createUpstreamSubscriptionManagerPage(
           </section>
         )
       }
-      if (accountControl === undefined) {
+      if (!hasManagedAccountReader(service)) {
         return (
           <section className='cus-section'>
             {groupHeader(props.t('upstream.group.account-subscriptions'))}
