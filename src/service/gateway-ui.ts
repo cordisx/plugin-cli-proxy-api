@@ -277,6 +277,26 @@ export const managedServiceUI: ManagedServiceNodeUISourceV1 = Object.freeze({
         })
       },
       readAccounts,
+      prepareAccountToggle(request: ManagedServiceCliProxyAccountToggleRequestV1) {
+        if (!bindingMatches(request.binding, binding) || state === undefined || signal.aborted) {
+          throw new Error('account toggle binding unavailable')
+        }
+        return {
+          operations: [
+            { operationId: 'gateway.management.accounts.list', maxInvocations: 2 },
+            {
+              operationId: 'gateway.management.accounts.toggle',
+              value: {
+                name: request.accountId,
+                ...(request.authIndex === undefined ? {} : { auth_index: request.authIndex }),
+                disabled: request.disabled,
+              },
+              maxInvocations: 1,
+            },
+            { operationId: 'gateway.models.list', maxInvocations: 1 },
+          ],
+        }
+      },
       async toggleAccount(
         request: ManagedServiceCliProxyAccountToggleRequestV1,
       ): Promise<ManagedServiceCliProxyAccountToggleResultV1> {

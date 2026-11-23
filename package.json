@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@cordisx/eslint-config": "github:cordisx/cordisxmono#c63c2e8c2ba7e11502934a52ad2ce3734e804cdc",
-    "@cordisx/protocol": "github:cordisx/cordisx-protocol#3240254fe8bd138bc6f9099d6f053c115e7312f0",
+    "@cordisx/protocol": "github:cordisx/cordisx-protocol#3a93eae49577ad33255d02350cda6f3c95b47e3b",
     "@deepseek-ai/cordis": "4.0.1",
     "@deepseek-ai/schemastery": "3.18.1",
     "@projectwallace/stylelint-plugin": "0.7.0",

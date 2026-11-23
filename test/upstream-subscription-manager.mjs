@@ -59,10 +59,11 @@ test('page imports managed-service-ui/v1 and not temporary shim', () => {
 // Account subscription actions use accountControl
 // ---------------------------------------------------------------------------
 
-test('account reads are independent while account changes use accountControl', () => {
+test('account reads and toggles can be independent of OAuth control', () => {
   assert.match(pageTsx, /readManagedAccounts\(current\)/)
   assert.match(pageTsx, /hasManagedAccountReader\(service\)/)
-  assert.match(pageTsx, /accountControl\.toggleAccount\(/)
+  assert.match(pageTsx, /toggleManagedAccount\(service,/)
+  assert.match(pageTsx, /hasManagedAccountToggle\(service\)/)
   assert.match(pageTsx, /accountControl\.startOAuth\(/)
   assert.match(pageTsx, /accountControl\.pollOAuth\(/)
   assert.match(pageTsx, /accountControl\.cancelOAuth\(/)

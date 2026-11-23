@@ -9,7 +9,7 @@ const built = await build({
   platform: 'node',
   format: 'esm',
 })
-const { hasManagedAccountReader, readManagedAccounts } = await import(
+const { hasManagedAccountReader, readManagedAccounts, hasManagedAccountToggle, toggleManagedAccount } = await import(
   `data:text/javascript;base64,${Buffer.from(built.outputFiles[0].contents).toString('base64')}`
 )
 
@@ -65,4 +65,42 @@ test('an unavailable or failed independent read does not fall back to account co
   }
   await assert.rejects(readManagedAccounts(service), /owner unavailable/)
   assert.equal(legacyCalls, 0)
+})
+
+test('independent account toggles do not require or fall back to OAuth control', async () => {
+  const request = { accountId: 'one', disabled: true }
+  const denied = { status: 'denied' }
+  let legacyCalls = 0
+  const service = {
+    async toggleAccount(value) {
+      assert.equal(value, request)
+      return denied
+    },
+    accountControl: {
+      async toggleAccount() {
+        legacyCalls++
+      },
+    },
+  }
+  assert.equal(hasManagedAccountToggle(service), true)
+  assert.equal(await toggleManagedAccount(service, request), denied)
+  service.toggleAccount = async () => {
+    throw new Error('uncertain')
+  }
+  await assert.rejects(toggleManagedAccount(service, request), /uncertain/)
+  assert.equal(legacyCalls, 0)
+})
+
+test('older Hosts retain account toggle support without adding it to read-only Hosts', async () => {
+  const request = { accountId: 'one', disabled: false }
+  const control = {
+    value: { status: 'accepted' },
+    async toggleAccount() {
+      return this.value
+    },
+  }
+  assert.equal(hasManagedAccountToggle({ accountControl: control }), true)
+  assert.equal(await toggleManagedAccount({ accountControl: control }, request), control.value)
+  assert.equal(hasManagedAccountToggle({ readAccounts() {} }), false)
+  assert.equal(await toggleManagedAccount({}, request), undefined)
 })

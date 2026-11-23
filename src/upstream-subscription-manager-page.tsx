@@ -17,7 +17,12 @@ import type {
   ManagedServiceV1,
 } from '@cordisx/protocol/managed-service-ui/v1'
 import { requestOwnPluginConfiguration } from './manager-configuration.js'
-import { hasManagedAccountReader, readManagedAccounts } from './managed-account-read.js'
+import {
+  hasManagedAccountReader,
+  hasManagedAccountToggle,
+  readManagedAccounts,
+  toggleManagedAccount,
+} from './managed-account-read.js'
 import './upstream-subscription-manager-page.css'
 
 const SERVICE_ID = 'gateway-runtime'
@@ -187,8 +192,10 @@ export function createUpstreamSubscriptionManagerPage(
     const oauthPollGenerationRef = useRef(0)
     const oauthStateRef = useRef<AccountOAuthState | null>(null)
     const serviceRef = useRef<ManagedServiceV1 | null>(null)
+    const accountReadVersionRef = useRef(0)
 
     const accountControl = service?.accountControl
+    const accountToggleAvailable = service !== null && hasManagedAccountToggle(service)
 
     const showError = useCallback(() => {
       notifications.show({
@@ -219,6 +226,7 @@ export function createUpstreamSubscriptionManagerPage(
         return
       }
       setLoading(prev => prev && snapshot === null && catalog === null && accounts === null)
+      const accountReadVersion = ++accountReadVersionRef.current
       try {
         const [snapResult, catalogResult, accountsResult] = await Promise.all([
           current.snapshot(),
@@ -238,10 +246,10 @@ export function createUpstreamSubscriptionManagerPage(
           setCatalog(null)
         }
 
-        if (accountsResult?.status === 'available') {
+        if (accountReadVersion === accountReadVersionRef.current && accountsResult?.status === 'available') {
           setAccounts(accountsResult.accounts)
           setAccountAvailability('available')
-        } else if (accountsResult !== undefined) {
+        } else if (accountReadVersion === accountReadVersionRef.current && accountsResult !== undefined) {
           setAccounts(null)
           setAccountAvailability('unavailable')
         }
@@ -320,6 +328,7 @@ export function createUpstreamSubscriptionManagerPage(
 
     useEffect(() => {
       let disposed = false
+      let stopAccountObservation: (() => void) | undefined
       void (async () => {
         if (managedServices === undefined) {
           showError()
@@ -334,6 +343,12 @@ export function createUpstreamSubscriptionManagerPage(
           return
         }
         serviceRef.current = acquired.service
+        stopAccountObservation = acquired.service.observeAccounts?.(projection => {
+          if (disposed) return
+          accountReadVersionRef.current += 1
+          setAccounts(projection)
+          setAccountAvailability('available')
+        })
         setService(acquired.service)
         await refresh(acquired.service)
         await subscribe(acquired.service)
@@ -347,6 +362,8 @@ export function createUpstreamSubscriptionManagerPage(
       return () => {
         window.clearInterval(refreshTimer)
         disposed = true
+        accountReadVersionRef.current += 1
+        stopAccountObservation?.()
         clearOauthPoll()
         const subscription = subscriptionRef.current
         subscriptionRef.current = null
@@ -474,10 +491,10 @@ export function createUpstreamSubscriptionManagerPage(
     }, [accountControl, accounts, clearOauthPoll, refresh, service, setOauthStateValue, showError])
 
     const toggleAccount = useCallback(async (accountId: string, disabled: boolean) => {
-      if (service === null || accountControl === undefined || accounts === null) return
+      if (service === null || !hasManagedAccountToggle(service) || accounts === null) return
       setPendingToggle({ accountId, disabled })
       try {
-        const result = await accountControl.toggleAccount({
+        const result = await toggleManagedAccount(service, {
           $schema:
             'https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/managed-service-cli-proxy-account-toggle.v1.schema.json' as const,
           contract: 'cordisx.managed-service-cli-proxy-account-toggle/v1' as const,
@@ -489,8 +506,8 @@ export function createUpstreamSubscriptionManagerPage(
           expectedRevision: accounts.revision,
           userGesture: gesture(),
         })
-        if (result.status === 'accepted') {
-          await refresh(service)
+        if (result?.status === 'accepted') {
+          await refresh(service, false)
         } else {
           showError()
         }
@@ -499,7 +516,7 @@ export function createUpstreamSubscriptionManagerPage(
       } finally {
         setPendingToggle(null)
       }
-    }, [accountControl, accounts, refresh, service, showError])
+    }, [accounts, refresh, service, showError])
 
     const openPluginConfiguration = useCallback(async () => {
       setConfigurationOpening(true)
@@ -640,7 +657,7 @@ export function createUpstreamSubscriptionManagerPage(
                 className='cus-button'
                 variant={account.disabled ? 'primary' : 'secondary'}
                 aria-busy={isToggling}
-                disabled={isToggling || accountControl === undefined || account.unavailable}
+                disabled={isToggling || !accountToggleAvailable || account.unavailable}
                 onClick={() => void toggleAccount(account.accountId, !account.disabled)}
               >
                 {account.disabled ? props.t('upstream.action.enable') : props.t('upstream.action.disable')}
