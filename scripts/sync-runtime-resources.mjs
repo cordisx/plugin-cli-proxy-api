@@ -29,10 +29,13 @@ for (const platform of await readdir(nativeRoot).catch(() => [])) {
     const directory = path.join(nativeRoot, platform, architecture)
     for (const file of await readdir(directory)) {
       if (!/^cordisx-gateway-bridge(?:\.dylib|\.so|\.dll)$/.test(file)) continue
+      if (!['arm64', 'amd64'].includes(architecture)) {
+        throw new Error('unsupported native plugin discovery architecture: ' + architecture)
+      }
       resources.push({
         ...await declaration(`./runtime/cli-proxy-plugins/${platform}/${architecture}/${file}`, 'executable'),
         platforms: [platform],
-        architectures: [architecture],
+        architectures: [architecture === 'amd64' ? 'x64' : architecture],
       })
     }
   }

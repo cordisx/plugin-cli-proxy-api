@@ -7,7 +7,9 @@ the CordisX interface.
 
 ## Install
 
-Plugin ID: `cli-proxy-api`. Current release: `0.1.2`.
+Plugin ID: `cli-proxy-api`. Current release: `0.1.3`.
+
+The packaged gateway bridge supports macOS arm64 and Linux x64.
 
 The CordisX Community Marketplace feed must already be configured and enabled
 before `--source` can select it:
@@ -15,7 +17,7 @@ before `--source` can select it:
 ```sh
 FEED_URL=https://raw.githubusercontent.com/cordisx/marketplace/main/marketplace.json
 npx cordisx@beta source add "$FEED_URL" --yes
-npx cordisx@beta plugin install cli-proxy-api --source "$FEED_URL" --version 0.1.2
+npx cordisx@beta plugin install cli-proxy-api --source "$FEED_URL" --version 0.1.3
 ```
 
 Skip `source add` when that exact feed is already enabled. For another profile,
@@ -24,9 +26,9 @@ the source change only; it does not approve plugin permissions. A discovery
 source is not a trust root.
 
 The install command becomes available after the Marketplace v3 entry lists the
-verified `0.1.2` artifact. Until then, download the archive and `SHA256SUMS`
+verified `0.1.3` artifact. Until then, download the archive and `SHA256SUMS`
 from the
-[GitHub release](https://github.com/cordisx/plugin-cli-proxy-api/releases/tag/v0.1.2).
+[GitHub release](https://github.com/cordisx/plugin-cli-proxy-api/releases/tag/v0.1.3).
 
 ## Use
 
@@ -64,7 +66,7 @@ provider or model when an exact identity is unavailable.
 
 ## Troubleshooting
 
-- **Install cannot find version `0.1.2`:** confirm the Marketplace v3 entry
+- **Install cannot find version `0.1.3`:** confirm the Marketplace v3 entry
   lists the verified artifact. `--source` does not add or repair a feed.
 - **No models or sessions appear:** confirm CLIProxyAPI is running, its accounts
   are enabled, and model/catalog read permissions are granted.

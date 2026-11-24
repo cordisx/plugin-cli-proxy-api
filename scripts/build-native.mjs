@@ -8,7 +8,9 @@ const execFileAsync = promisify(execFile)
 const root = fileURLToPath(new URL('../', import.meta.url))
 const source = path.join(root, 'native/gateway-bridge')
 const extension = process.platform === 'darwin' ? '.dylib' : process.platform === 'win32' ? '.dll' : '.so'
-const directory = path.join(root, 'runtime/cli-proxy-plugins', process.platform, process.arch)
+// CLIProxyAPI uses Go's architecture names for plugin discovery.
+const nativeArchitecture = process.arch === 'x64' ? 'amd64' : process.arch
+const directory = path.join(root, 'runtime/cli-proxy-plugins', process.platform, nativeArchitecture)
 const output = path.join(directory, `cordisx-gateway-bridge${extension}`)
 
 if (!['darwin', 'linux', 'win32'].includes(process.platform) || !['arm64', 'x64'].includes(process.arch)) {

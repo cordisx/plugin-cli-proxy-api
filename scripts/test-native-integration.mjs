@@ -25,7 +25,7 @@ await execFileAsync('go', ['test', '-mod=mod', '-count=1', '-timeout', '90s', '-
   cwd: work,
   env: {
     ...process.env,
-    CORDISX_GATEWAY_REPO: root,
+    CORDISX_GATEWAY_REPO: process.env.CORDISX_GATEWAY_REPO ?? root,
   },
   maxBuffer: 16 * 1024 * 1024,
 })
