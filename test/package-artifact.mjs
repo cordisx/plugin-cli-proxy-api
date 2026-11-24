@@ -111,7 +111,7 @@ test('publishes schema-valid v14 package and runtime manifests with exact reques
   assert.deepEqual(executableResources.map(resource => resource.path).sort(), actualExecutablePaths.sort())
   for (const resource of executableResources) {
     const match =
-      /^\.\/runtime\/cli-proxy-plugins\/(darwin|linux|win32)\/(arm64|x64)\/cordisx-gateway-bridge\.(dylib|so|dll)$/
+      /^\.\/runtime\/cli-proxy-plugins\/(darwin|linux|win32)\/(arm64|amd64)\/cordisx-gateway-bridge\.(dylib|so|dll)$/
         .exec(
           resource.path,
         )
@@ -119,7 +119,7 @@ test('publishes schema-valid v14 package and runtime manifests with exact reques
     const [, platform, architecture, extension] = match
     assert.equal(extension, nativeExtensions[platform], `native resource extension does not match ${platform}`)
     assert.deepEqual(resource.platforms, [platform])
-    assert.deepEqual(resource.architectures, [architecture])
+    assert.deepEqual(resource.architectures, [architecture === 'amd64' ? 'x64' : architecture])
   }
   for (const resource of gateway.runtimeResources) {
     const bytes = await readFile(new URL(`../${resource.path.slice(2)}`, import.meta.url))

@@ -15,8 +15,13 @@ const runtimeManifest = JSON.parse(runtimeText)
 assert.equal(packageManifest.runtimeManifest.digest, digest(runtimeText))
 const resources = runtimeManifest.services.find(service => service.id === 'gateway-runtime')?.runtimeResources
 assert.ok(Array.isArray(resources), 'gateway runtime resources are missing')
-for (const [platform, architecture, extension] of [['darwin', 'arm64', 'dylib'], ['linux', 'x64', 'so']]) {
-  const relative = './runtime/cli-proxy-plugins/' + platform + '/' + architecture + '/cordisx-gateway-bridge.'
+for (
+  const [platform, nativeArchitecture, architecture, extension] of [
+    ['darwin', 'arm64', 'arm64', 'dylib'],
+    ['linux', 'amd64', 'x64', 'so'],
+  ]
+) {
+  const relative = './runtime/cli-proxy-plugins/' + platform + '/' + nativeArchitecture + '/cordisx-gateway-bridge.'
     + extension
   const resource = resources.find(item => item.path === relative)
   assert.ok(resource, 'missing ' + platform + '/' + architecture + ' bridge declaration')
