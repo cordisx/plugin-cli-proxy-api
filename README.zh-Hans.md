@@ -6,23 +6,23 @@ CLIProxy Providers 将 CordisX 连接到 CLIProxyAPI runtime 提供的模型与�
 
 ## 安装
 
-插件 ID：`cli-proxy-api`。当前版本：`0.1.1`。
+插件 ID：`cli-proxy-api`。当前版本：`0.1.2`。
 
 CordisX Community Marketplace feed 必须先完成配置并启用，`--source` 才能选择它：
 
 ```sh
 FEED_URL=https://raw.githubusercontent.com/cordisx/marketplace/main/marketplace.json
 npx cordisx@beta source add "$FEED_URL" --yes
-npx cordisx@beta plugin install cli-proxy-api --source "$FEED_URL" --version 0.1.1
+npx cordisx@beta plugin install cli-proxy-api --source "$FEED_URL" --version 0.1.2
 ```
 
 若该 feed 已启用，可跳过 `source add`。使用其他 profile 时，两条命令都要添加
 相同的 `--profile <profile>`。`--yes` 只确认来源变更，不会批准插件权限；发现来源
 也不等同于 trust root。
 
-Marketplace v3 条目列出已验证的 `0.1.1` artifact 后，安装命令才可用。在此之前，
+Marketplace v3 条目列出已验证的 `0.1.2` artifact 后，安装命令才可用。在此之前，
 可从
-[GitHub Release](https://github.com/cordisx/plugin-cli-proxy-api/releases/tag/v0.1.1)
+[GitHub Release](https://github.com/cordisx/plugin-cli-proxy-api/releases/tag/v0.1.2)
 下载压缩包与 `SHA256SUMS`。
 
 ## 使用
@@ -55,7 +55,7 @@ CLIProxyAPI 账号与 endpoint 必须在外部 runtime 中配置。Host 负责�
 
 ## 排错
 
-- **找不到 `0.1.1`：**确认 Marketplace v3 条目已列出验证后的 artifact；`--source`
+- **找不到 `0.1.2`：**确认 Marketplace v3 条目已列出验证后的 artifact；`--source`
   不会添加或修复 feed。
 - **没有模型或会话：**确认 CLIProxyAPI 正在运行、账号已启用，并授予模型和 catalog
   读取权限。
