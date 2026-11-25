@@ -466,7 +466,7 @@ test('routes account and OAuth controls and refreshes the gateway model publicat
     expectedRevision: accountsResult.accounts.revision,
     userGesture: { kind: 'explicit-click', at: new Date().toISOString() },
   }
-  const toggled = await extension.toggleAccount({
+  const toggleRequest = {
     $schema:
       'https://raw.githubusercontent.com/cordisx/cordisx-protocol/main/schemas/managed-service-cli-proxy-account-toggle.v1.schema.json',
     contract: 'cordisx.managed-service-cli-proxy-account-toggle/v1',
@@ -476,7 +476,26 @@ test('routes account and OAuth controls and refreshes the gateway model publicat
     authIndex: 'auth-index-one',
     disabled: true,
     ...common,
+  }
+  const eventsBeforePlan = fixture.events.length
+  assert.deepEqual(extension.prepareAccountToggle(toggleRequest), {
+    operations: [
+      { operationId: 'gateway.management.accounts.list', maxInvocations: 2 },
+      {
+        operationId: 'gateway.management.accounts.toggle',
+        value: { name: 'account-one', auth_index: 'auth-index-one', disabled: true },
+        maxInvocations: 1,
+      },
+      { operationId: 'gateway.models.list', maxInvocations: 1 },
+    ],
   })
+  assert.equal(fixture.events.length, eventsBeforePlan)
+  assert.throws(() =>
+    extension.prepareAccountToggle({
+      ...toggleRequest,
+      binding: { ...toggleRequest.binding, bindingId: 'other' },
+    }), /binding unavailable/)
+  const toggled = await extension.toggleAccount(toggleRequest)
   assert.equal(toggled.status, 'accepted')
   const started = await extension.startOAuth({
     $schema:
